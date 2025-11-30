@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 interface BookingFormProps {
     roomId: number;
@@ -13,12 +15,21 @@ export default function BookingForm({ roomId }: BookingFormProps) {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [isSuccess, setIsSuccess] = useState(false);
+    const router = useRouter();
 
     async function handleReserve(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
         setMessage("");
         setIsSuccess(false);
+
+        const token = Cookies.get("room_token");
+        if (!token) {
+            setMessage("Você precisa estar logado para reservar.");
+            setTimeout(() => router.push("/login"), 1500);
+            setLoading(false);
+            return;
+        }
 
         try {
             console.log("--- INICIANDO RESERVA ---");
@@ -35,7 +46,10 @@ export default function BookingForm({ roomId }: BookingFormProps) {
                 `${process.env.NEXT_PUBLIC_API_URL}/bookings`,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
                     body: JSON.stringify(payload),
                 }
             );
