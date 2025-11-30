@@ -3,6 +3,7 @@ package com.room.scheduler.service;
 import com.room.scheduler.dto.BookingRequest;
 import com.room.scheduler.model.Booking;
 import com.room.scheduler.model.Room;
+import com.room.scheduler.model.User;
 import com.room.scheduler.repository.BookingRepository;
 import com.room.scheduler.repository.RoomRepository;
 
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @Transactional(readOnly = true)
@@ -39,8 +41,11 @@ public class BookingService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta sala já está reservada para este horário");
         }
 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Booking booking = new Booking();
         booking.setRoom(room);
+        booking.setUser(user);
         booking.setStartAt(request.getStartAt());
         booking.setEndAt(request.getEndAt());
 
