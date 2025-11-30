@@ -25,8 +25,8 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(BookingRequest request) {
-        if (request.getEndAt().isBefore(request.getStartAt())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A data final deve ser depois da inicial");
+        if (!request.getEndAt().isAfter(request.getStartAt().plusMinutes(15))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A data final deve ser maior que a inicial");
         }
 
         Room room = roomRepository.findById(request.getRoomId())
