@@ -1,5 +1,8 @@
-export interface Room {
+export interface BookingSummary {
     id: number;
-    name: string;
-    capacity: number;
+    roomName: string;
+    userName: string;
+    userEmail: string;
+    startAt: string;
+    endAt: string;
 }
