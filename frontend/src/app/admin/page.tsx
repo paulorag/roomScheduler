@@ -10,6 +10,32 @@ export default function AdminDashboard() {
     const [bookings, setBookings] = useState<BookingSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [newRoomName, setNewRoomName] = useState("");
+    const [newRoomCapacity, setNewRoomCapacity] = useState("");
+    const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+
+    async function handleCreateRoom(e: React.FormEvent) {
+        e.preventDefault();
+        const token = Cookies.get("room_token");
+
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                name: newRoomName,
+                capacity: Number(newRoomCapacity),
+            }),
+        });
+
+        // Limpa e recarrega (o ideal seria atualizar o state, mas reload funciona pro MVP)
+        setIsCreatingRoom(false);
+        setNewRoomName("");
+        setNewRoomCapacity("");
+        window.location.reload();
+    }
 
     useEffect(() => {
         const token = Cookies.get("room_token");
@@ -88,6 +114,54 @@ export default function AdminDashboard() {
                     <div className="bg-red-100 text-red-700 p-4 rounded mb-4">
                         {error}
                     </div>
+                )}
+
+                <div className="mb-6 flex justify-end">
+                    <button
+                        onClick={() => setIsCreatingRoom(!isCreatingRoom)}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition cursor-pointer font-medium"
+                    >
+                        + Nova Sala
+                    </button>
+                </div>
+
+                {isCreatingRoom && (
+                    <form
+                        onSubmit={handleCreateRoom}
+                        className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-8 flex gap-4 items-end"
+                    >
+                        <div className="flex-1">
+                            <label className="block text-sm text-slate-600 mb-1">
+                                Nome da Sala
+                            </label>
+                            <input
+                                required
+                                className="w-full border p-2 rounded bg-white text-slate-900"
+                                value={newRoomName}
+                                onChange={(e) => setNewRoomName(e.target.value)}
+                            />
+                        </div>
+                        <div className="w-32">
+                            <label className="block text-sm text-slate-600 mb-1">
+                                Capacidade
+                            </label>
+                            <input
+                                type="number"
+                                required
+                                className="w-full border p-2 rounded bg-white text-slate-900"
+                                value={newRoomCapacity}
+                                onChange={(e) =>
+                                    setNewRoomCapacity(e.target.value)
+                                }
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 h-10 cursor-pointer"
+                        >
+                            Salvar
+                        </button>
+                    </form>
                 )}
 
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
