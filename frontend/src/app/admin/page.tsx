@@ -139,10 +139,7 @@ export default function AdminDashboard() {
                 setRoomCapacity("");
                 setIsFormOpen(false);
             } else {
-                setFeedback({
-                    text: "Erro ao salvar sala. Verifique permissões.",
-                    type: "error",
-                });
+                setFeedback({ text: "Erro ao salvar sala.", type: "error" });
             }
         } catch (error) {
             setFeedback({ text: "Erro de rede.", type: "error" });
@@ -231,6 +228,41 @@ export default function AdminDashboard() {
             } else {
                 setFeedback({
                     text: "Erro ao alterar permissão.",
+                    type: "error",
+                });
+            }
+        } catch (error) {
+            setFeedback({ text: "Erro de rede.", type: "error" });
+        }
+    }
+
+    async function handleCancelBooking(id: number) {
+        if (
+            !confirm(
+                "Como Admin, você pode cancelar qualquer reserva imediatamente. Confirmar?"
+            )
+        )
+            return;
+
+        const token = Cookies.get("room_token");
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/bookings/${id}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            if (res.ok || res.status === 204) {
+                setBookings(bookings.filter((b) => b.id !== id));
+                setFeedback({
+                    text: "Reserva cancelada pelo administrador.",
+                    type: "success",
+                });
+            } else {
+                setFeedback({
+                    text: "Erro ao cancelar reserva.",
                     type: "error",
                 });
             }
@@ -501,13 +533,16 @@ export default function AdminDashboard() {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">
                                         Fim
                                     </th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">
+                                        Ações
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
                                 {bookings.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={4}
+                                            colSpan={5}
                                             className="px-6 py-8 text-center text-slate-500"
                                         >
                                             Nenhuma reserva encontrada.
@@ -533,6 +568,18 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-500">
                                                 {formatDate(booking.endAt)}
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() =>
+                                                        handleCancelBooking(
+                                                            booking.id
+                                                        )
+                                                    }
+                                                    className="text-red-600 hover:text-red-900 hover:underline cursor-pointer"
+                                                >
+                                                    Cancelar
+                                                </button>
                                             </td>
                                         </tr>
                                     ))

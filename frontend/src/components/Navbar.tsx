@@ -61,6 +61,12 @@ export default function Navbar() {
                 <div className="flex items-center gap-4">
                     {isLoggedIn ? (
                         <>
+                            <Link
+                                href="/my-bookings"
+                                className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition"
+                            >
+                                Minhas Reservas
+                            </Link>
                             {isAdmin && (
                                 <Link
                                     href="/admin"
