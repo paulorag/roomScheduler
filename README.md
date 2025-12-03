@@ -17,8 +17,8 @@ The project was architected simulating a real production environment, using **Hy
 
 ### 🌐 Live Production Links
 
--   **Application (Frontend):** [Access RoomScheduler (Vercel)](LINK_ROOMSCHEDULER_VERCEL)
--   **API (Backend):** [API Status (Render)](STATUS_API_RENDER)
+-   **Application (Frontend):** [Access RoomScheduler (Vercel)](https://room-scheduler-gold.vercel.app/)
+-   **API (Backend):** [API Status (Render)](https://room-scheduler-api.onrender.com/api/rooms)
 
 ---
 
