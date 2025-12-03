@@ -73,8 +73,6 @@ O sistema segue uma arquitetura distribuída e "Cloud Native":
 
 ## 📸 Screenshots
 
-> _Coloque as imagens na pasta `assets` na raiz do projeto._
-
 ### Dashboard Administrativo
 
 ![Admin Dashboard](./assets/dashboard.png)

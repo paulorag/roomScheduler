@@ -72,17 +72,20 @@ The system follows a distributed and "Cloud Native" architecture:
 
 ## 📸 Screenshots
 
-|                Administrative Dashboard                |                     My Bookings (24h Rule)                     |
-| :----------------------------------------------------: | :------------------------------------------------------------: |
-| ![Admin Dashboard Screenshot](PATH_TO_DASHBOARD_IMAGE) |      ![My Bookings Screenshot](PATH_TO_MY_BOOKINGS_IMAGE)      |
-|     Overview of bookings and room/user management.     | User interface showing cancellation block for short deadlines. |
+### Administrative Dashboard
 
-|                      Landing Page                      |
-| :----------------------------------------------------: |
-| ![Landing Page Screenshot](PATH_TO_LANDING_PAGE_IMAGE) |
-|           Public listing of available rooms.           |
+![Admin Dashboard](./assets/dashboard.png)
+_Overview of bookings and room/user management._
 
-_(Note: Replace `PATH*TO*_\_IMAGE`with the actual paths to your screenshots in the repository, e.g.,`assets/screenshots/dashboard.png`)\*
+### My Bookings (24h Rule)
+
+![My Bookings](./assets/my-bookings.png)
+_User interface showing cancellation block for short deadlines._
+
+### Landing Page
+
+![Home](./assets/home.png)
+_Public listing of available rooms._
 
 ---
 
