@@ -267,7 +267,7 @@ export default function AdminDashboard() {
                 <div className="flex border-b border-slate-200 mb-8 overflow-x-auto">
                     <button
                         onClick={() => handleTabChange("ROOMS")}
-                        className={`px-6 py-3 font-medium text-sm transition border-b-2 ${
+                        className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
                             activeTab === "ROOMS"
                                 ? "border-indigo-600 text-indigo-600"
                                 : "border-transparent text-slate-500 hover:text-slate-700"
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
                     </button>
                     <button
                         onClick={() => handleTabChange("USERS")}
-                        className={`px-6 py-3 font-medium text-sm transition border-b-2 ${
+                        className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
                             activeTab === "USERS"
                                 ? "border-indigo-600 text-indigo-600"
                                 : "border-transparent text-slate-500 hover:text-slate-700"
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
                     </button>
                     <button
                         onClick={() => handleTabChange("BOOKINGS")}
-                        className={`px-6 py-3 font-medium text-sm transition border-b-2 ${
+                        className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
                             activeTab === "BOOKINGS"
                                 ? "border-indigo-600 text-indigo-600"
                                 : "border-transparent text-slate-500 hover:text-slate-700"
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
 
                 {feedback && (
                     <div
-                        className={`p-4 rounded-lg mb-6 border ${
+                        className={`p-4 rounded-lg mb-6 border animate-in fade-in slide-in-from-top-2 ${
                             feedback.type === "success"
                                 ? "bg-green-50 text-green-700 border-green-100"
                                 : "bg-red-50 text-red-700 border-red-100"
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
                                     setRoomCapacity("");
                                     setFeedback(null);
                                 }}
-                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium text-sm"
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium text-sm cursor-pointer shadow-sm transition"
                             >
                                 {isFormOpen
                                     ? "Fechar Formulário"
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                                     </label>
                                     <input
                                         required
-                                        className="w-full border p-2 rounded text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full border p-2 rounded text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                                         value={roomName}
                                         onChange={(e) =>
                                             setRoomName(e.target.value)
@@ -353,7 +353,7 @@ export default function AdminDashboard() {
                                     <input
                                         required
                                         type="number"
-                                        className="w-full border p-2 rounded text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full border p-2 rounded text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                                         value={roomCapacity}
                                         onChange={(e) =>
                                             setRoomCapacity(e.target.value)
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="bg-green-600 text-white px-6 py-2 rounded font-semibold w-full md:w-auto h-10 hover:bg-green-700 transition"
+                                    className="bg-green-600 text-white px-6 py-2 rounded font-semibold w-full md:w-auto h-10 hover:bg-green-700 transition cursor-pointer"
                                 >
                                     {editingRoomId ? "Atualizar" : "Salvar"}
                                 </button>
@@ -386,7 +386,7 @@ export default function AdminDashboard() {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => openEditRoom(room)}
-                                            className="text-indigo-600 hover:bg-indigo-50 p-2 rounded transition"
+                                            className="text-indigo-600 hover:bg-indigo-50 p-2 rounded transition cursor-pointer"
                                             title="Editar"
                                         >
                                             Editar
@@ -395,7 +395,7 @@ export default function AdminDashboard() {
                                             onClick={() =>
                                                 handleDeleteRoom(room.id)
                                             }
-                                            className="text-red-600 hover:bg-red-50 p-2 rounded transition"
+                                            className="text-red-600 hover:bg-red-50 p-2 rounded transition cursor-pointer"
                                             title="Excluir"
                                         >
                                             Excluir
@@ -462,7 +462,7 @@ export default function AdminDashboard() {
                                                         user.role
                                                     )
                                                 }
-                                                className="text-indigo-600 hover:text-indigo-900 hover:underline"
+                                                className="text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
                                             >
                                                 {user.role === "ADMIN"
                                                     ? "Rebaixar"
@@ -472,7 +472,7 @@ export default function AdminDashboard() {
                                                 onClick={() =>
                                                     handleDeleteUser(user.id)
                                                 }
-                                                className="text-red-600 hover:text-red-900 hover:underline"
+                                                className="text-red-600 hover:text-red-900 hover:underline cursor-pointer"
                                             >
                                                 Banir
                                             </button>
@@ -484,7 +484,6 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* --- CONTEÚDO: RESERVAS --- */}
                 {activeTab === "BOOKINGS" && (
                     <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-slate-200">
                         <table className="min-w-full divide-y divide-slate-200">

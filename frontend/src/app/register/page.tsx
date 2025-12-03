@@ -98,7 +98,7 @@ export default function RegisterPage() {
                     </div>
 
                     {error && (
-                        <div className="text-red-600 text-sm text-center">
+                        <div className="text-red-600 text-sm text-center bg-red-50 p-2 rounded">
                             {error}
                         </div>
                     )}
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold mt-2 cursor-pointer"
+                        className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold mt-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {loading ? "Criando..." : "Cadastrar"}
                     </button>

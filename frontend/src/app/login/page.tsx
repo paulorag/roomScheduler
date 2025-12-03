@@ -29,10 +29,9 @@ export default function LoginPage() {
 
             if (res.ok) {
                 const data = await res.json();
-                Cookies.set("room_token", data.token, { expires: 1 / 12 }); // 2 horas
+                Cookies.set("room_token", data.token, { expires: 1 / 12 });
                 router.push("/");
             } else {
-                // Tenta ler a mensagem de erro do backend, se houver
                 const data = await res.json().catch(() => ({}));
                 setError(data.error || "Credenciais inválidas.");
             }
@@ -47,7 +46,6 @@ export default function LoginPage() {
     }
 
     return (
-        // Layout centralizado com fundo suave
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-slate-100">
                 <div className="text-center mb-8">
@@ -97,11 +95,12 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition font-semibold text-sm disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                        className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition font-semibold text-sm disabled:opacity-70 disabled:cursor-not-allowed mt-2 cursor-pointer"
                     >
                         {loading ? "Autenticando..." : "Acessar Painel"}
                     </button>
                 </form>
+
                 <p className="text-center text-sm text-slate-500 mt-6">
                     Não tem uma conta?{" "}
                     <Link

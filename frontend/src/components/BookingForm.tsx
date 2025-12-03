@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 
 interface BookingFormProps {
     roomId: number;
-    roomName: string; // NOVO PROP para exibir o nome no modal
+    roomName: string;
 }
 
 export default function BookingForm({ roomId, roomName }: BookingFormProps) {
     const [isOpen, setIsOpen] = useState(false);
-    // Inicia os inputs com a data/hora atual formatada para o datetime-local
+
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     const defaultStart = now.toISOString().slice(0, 16);
@@ -47,7 +47,7 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
         try {
             const payload = {
                 roomId,
-                startAt: startAt + ":00", // Adiciona segundos para o padrão ISO
+                startAt: startAt + ":00",
                 endAt: endAt + ":00",
             };
 
@@ -80,7 +80,6 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                     setMessage(null);
                 }, 2000);
             } else {
-                // Tenta extrair a mensagem de erro mais amigável possível
                 const errorMsg =
                     data?.error ||
                     data?.message ||
@@ -98,23 +97,20 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
         }
     }
 
-    // Botão Inicial (Que abre o modal)
     if (!isOpen) {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                // MUDANÇA: Cor Indigo e estilo mais moderno
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition focus:ring-4 focus:ring-indigo-200"
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition focus:ring-4 focus:ring-indigo-200 cursor-pointer"
             >
                 Agendar Horário
             </button>
         );
     }
 
-    // Modal do Formulário
     return (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-6 bg-indigo-600">
                     <h3 className="text-lg font-bold text-white">
                         Nova Reserva
@@ -131,7 +127,7 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                             <input
                                 type="datetime-local"
                                 required
-                                className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-600"
+                                className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-600 bg-white"
                                 value={startAt}
                                 onChange={(e) => setStartAt(e.target.value)}
                             />
@@ -144,7 +140,7 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                             <input
                                 type="datetime-local"
                                 required
-                                className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-600"
+                                className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-600 bg-white"
                                 value={endAt}
                                 onChange={(e) => setEndAt(e.target.value)}
                             />
@@ -170,16 +166,14 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                                 setIsOpen(false);
                                 setMessage(null);
                             }}
-                            // Botão Cancelar mais discreto
-                            className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition font-semibold"
+                            className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition font-semibold cursor-pointer"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            // Botão Confirmar com a cor de destaque
-                            className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-70 transition font-semibold"
+                            className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-70 transition font-semibold cursor-pointer"
                         >
                             {loading ? "Confirmando..." : "Confirmar Reserva"}
                         </button>
