@@ -4,11 +4,19 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
+interface TokenPayload {
+    sub: string;
+    role: string;
+    exp: number;
+}
 
 export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const token = Cookies.get("room_token");
@@ -17,11 +25,23 @@ export default function Navbar() {
         if (isLoggedIn !== hasToken) {
             setIsLoggedIn(hasToken);
         }
+
+        if (token) {
+            try {
+                const decoded = jwtDecode<TokenPayload>(token);
+                setIsAdmin(decoded.role === "ADMIN");
+            } catch (error) {
+                setIsAdmin(false);
+            }
+        } else {
+            setIsAdmin(false);
+        }
     }, [pathname, isLoggedIn]);
 
     function handleLogout() {
         Cookies.remove("room_token");
         setIsLoggedIn(false);
+        setIsAdmin(false);
         router.push("/login");
         router.refresh();
     }
@@ -31,7 +51,6 @@ export default function Navbar() {
     return (
         <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
             <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                {/* Logo */}
                 <Link
                     href="/"
                     className="text-xl font-bold text-indigo-600 hover:text-indigo-800 transition tracking-tight"
@@ -39,16 +58,18 @@ export default function Navbar() {
                     RoomScheduler
                 </Link>
 
-                {/* Ações */}
                 <div className="flex items-center gap-4">
                     {isLoggedIn ? (
                         <>
-                            <Link
-                                href="/admin"
-                                className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition"
-                            >
-                                Painel Admin
-                            </Link>
+                            {isAdmin && (
+                                <Link
+                                    href="/admin"
+                                    className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition bg-slate-50 px-3 py-1 rounded-md border border-slate-200"
+                                >
+                                    Painel Admin
+                                </Link>
+                            )}
+
                             <button
                                 onClick={handleLogout}
                                 className="text-sm font-medium text-red-600 hover:text-red-800 transition cursor-pointer"

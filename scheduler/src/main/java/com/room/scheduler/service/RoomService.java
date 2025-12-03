@@ -23,6 +23,10 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
+    public void delete(Long id) {
+        roomRepository.deleteById(id);
+    }
+
     public List<Room> listAll() {
         return roomRepository.findAll();
     }
