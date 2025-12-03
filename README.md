@@ -1,133 +1,130 @@
 # RoomScheduler 🏢
 
-> Sistema corporativo Full Stack de gestão de espaços e agendamentos com controle de concorrência e segurança RBAC.
+[![Status](https://img.shields.io/badge/status-complete-green)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![Deploy Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](STATUS_API_RENDER)
+[![Deploy Frontend](https://img.shields.io/badge/Frontend-Vercel-000?logo=vercel)](LINK_ROOMSCHEDULER_VERCEL)
 
-![Status](https://img.shields.io/badge/Status-Completed-success)
-![Java](https://img.shields.io/badge/Java-21-orange)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+[Leia este documento em Português](README-pt.md)
 
-## 📖 Sobre o Projeto
+**Enterprise-grade Full Stack system for space and scheduling management with advanced security and RBAC.**
 
-O **RoomScheduler** é uma solução completa para resolver o problema de conflitos em reservas de salas de reunião. Diferente de um CRUD simples, este sistema implementa uma **lógica de agendamento stateful**, garantindo matematicamente que duas pessoas nunca ocupem o mesmo espaço no mesmo horário (Double Booking Prevention).
+## 📖 About the Project
 
-O projeto foi arquitetado simulando um ambiente de produção real, utilizando **Deploy Híbrido** em três nuvens diferentes para otimizar custos, performance e segurança.
+**RoomScheduler** is a complete solution to solve the problem of conflicts in meeting room bookings. Unlike a simple CRUD, this system implements **stateful scheduling logic**, mathematically ensuring that two people never occupy the same space at the same time (**Double Booking Prevention**).
 
-### 🌐 Links de Produção
+The project was architected simulating a real production environment, using **Hybrid Cloud Deploy** across three different clouds to optimize costs, performance, and security.
 
--   **Aplicação (Frontend):** [Acessar RoomScheduler (Vercel)](https://room-scheduler-gold.vercel.app/)
--   **API (Backend):** [Status da API (Render)](https://room-scheduler-api.onrender.com/api/rooms)
+### 🌐 Live Production Links
+
+-   **Application (Frontend):** [Access RoomScheduler (Vercel)](LINK_ROOMSCHEDULER_VERCEL)
+-   **API (Backend):** [API Status (Render)](STATUS_API_RENDER)
 
 ---
 
-## 🏗️ Arquitetura e Tecnologias
+## 🏗️ Architecture & Technologies
 
-O sistema segue uma arquitetura distribuída e "Cloud Native":
+The system follows a distributed and "Cloud Native" architecture:
 
-### Backend (API RESTful)
+### Backend (RESTful API)
 
--   **Java 21 & Spring Boot 3:** Core da aplicação robusto e tipado.
--   **Spring Security + JWT:** Autenticação Stateless e controle de permissão (RBAC - Role Based Access Control).
--   **Hibernate/JPA:** Camada de persistência otimizada.
--   **Docker:** Containerização com Multi-stage build (Maven image -> JRE Alpine image) para deploy leve.
--   **Hospedagem:** Render.
+-   **Java 21 & Spring Boot 3:** Robust and typed application core.
+-   **Spring Security + JWT:** Stateless authentication and permission control (**RBAC** - Role Based Access Control).
+-   **Hibernate/JPA:** Optimized persistence layer.
+-   **Docker:** Containerization with Multi-stage build (Maven image -> JRE Alpine image) for lightweight deployment.
+-   **Hosting:** Render.
 
 ### Frontend (SPA/SSR)
 
--   **Next.js 15 (App Router):** Framework React moderno com Server Components.
--   **TypeScript:** Tipagem estrita compartilhada com o Backend via interfaces.
--   **Tailwind CSS:** Estilização responsiva com tema corporativo "Clean".
--   **Middleware:** Proteção de rotas e gestão segura de Cookies.
--   **Hospedagem:** Vercel (Edge Network).
+-   **Next.js 15 (App Router):** Modern React framework with Server Components.
+-   **TypeScript:** Strict typing shared with the Backend via interfaces.
+-   **Tailwind CSS:** Responsive styling with a corporate "Clean" theme.
+-   **Middleware:** Route protection and secure Cookie management.
+-   **Hosting:** Vercel (Edge Network).
 
-### Dados
+### Data
 
--   **PostgreSQL (Neon Tech):** Banco de dados Serverless na nuvem para alta disponibilidade.
+-   **PostgreSQL (Neon Tech):** Serverless database in the cloud for high availability.
 
 ---
 
-## ✨ Funcionalidades Principais
+## ✨ Key Features
 
-### 🔒 Segurança & Identidade
+### 🔒 Security & Identity
 
--   **Autenticação JWT:** Login seguro com token assinado e Cookies HttpOnly.
--   **RBAC (Roles):** Diferenciação estrita entre `USER` (comum) e `ADMIN` (gestor).
--   **Proteção de Rotas:** Middleware no Frontend impede acesso não autorizado a páginas administrativas.
+-   **JWT Authentication:** Secure login with signed tokens and HttpOnly Cookies.
+-   **RBAC (Roles):** Strict differentiation between **USER** (standard) and **ADMIN** (manager).
+-   **Route Protection:** Middleware in the Frontend prevents unauthorized access to administrative pages.
 
-### 📅 Gestão de Reservas Inteligente
+### 📅 Smart Booking Management
 
--   **Algoritmo de Conflito:** Impede reservas sobrepostas no banco de dados (`StartA < EndB && EndA > StartB`).
--   **Regras de Negócio (SLA):** Cancelamento permitido apenas com 24h de antecedência para usuários comuns.
--   **Super Admin:** Administradores possuem override para cancelar qualquer reserva a qualquer momento.
+-   **Conflict Algorithm:** Prevents overlapping bookings in the database (`StartA < EndB && EndA > StartB`).
+-   **Business Rules (SLA):** Cancellation is allowed only with 24h notice for standard users.
+-   **Super Admin:** Administrators have an override to cancel any booking at any time.
 
-### ⚙️ Painel Administrativo Completo
+### ⚙️ Complete Administrative Panel
 
--   **Gestão de Salas:** Criar, Editar e Excluir espaços físicos.
--   **Gestão de Usuários:** Listar usuários, promover para Admin ou banir do sistema.
--   **Auditoria:** Visualização global de todos os agendamentos.
+-   **Room Management:** Create, Edit, and Delete physical spaces.
+-   **User Management:** List users, promote to Admin, or ban from the system.
+-   **Audit:** Global view of all schedules.
 
 ---
 
 ## 📸 Screenshots
 
-> _Coloque as imagens na pasta `assets` na raiz do projeto._
+|                Administrative Dashboard                |                     My Bookings (24h Rule)                     |
+| :----------------------------------------------------: | :------------------------------------------------------------: |
+| ![Admin Dashboard Screenshot](PATH_TO_DASHBOARD_IMAGE) |      ![My Bookings Screenshot](PATH_TO_MY_BOOKINGS_IMAGE)      |
+|     Overview of bookings and room/user management.     | User interface showing cancellation block for short deadlines. |
 
-### Dashboard Administrativo
+|                      Landing Page                      |
+| :----------------------------------------------------: |
+| ![Landing Page Screenshot](PATH_TO_LANDING_PAGE_IMAGE) |
+|           Public listing of available rooms.           |
 
-![Admin Dashboard](./assets/dashboard.png)
-_Visão geral das reservas e gestão de salas/usuários._
-
-### Minhas Reservas (Regra de 24h)
-
-![My Bookings](./assets/my-bookings.png)
-_Interface do usuário mostrando bloqueio de cancelamento para prazos curtos._
-
-### Landing Page
-
-![Home](./assets/home.png)
-_Listagem pública de salas disponíveis._
+_(Note: Replace `PATH*TO*_\_IMAGE`with the actual paths to your screenshots in the repository, e.g.,`assets/screenshots/dashboard.png`)\*
 
 ---
 
-## 🚀 Como Rodar Localmente
+## 🚀 How to Run Locally
 
-Siga estes passos para executar o projeto na sua máquina:
+Follow these steps to run the project on your machine:
 
-### Pré-requisitos
+### Prerequisites
 
 -   Docker & Docker Compose
 -   Java 21 (JDK)
 -   Node.js 18+
 
-### Passo 1: Clonar e Configurar
+### Step 1: Clone and Configure
 
 ```bash
 git clone [https://github.com/paulorag/room-scheduler.git](https://github.com/paulorag/room-scheduler.git)
 cd room-scheduler
 ```
 
-### Passo 2: Banco de Dados (Docker)
+### Step 2: Database (Docker)
 
-Suba o container do Postgres localmente:
-
-```bash
-docker-compose up -d
-```
-
-### Passo 3: Backend (Spring Boot)
-
-Em um terminal separado:
+Start the Postgres container locally:
 
 ```bash
 docker-compose up -d
 ```
 
-_O Backend rodará em http://localhost:8080_
+### Step 3: Backend (Spring Boot)
 
-### Passo 4: Frontend (Next.js)
+In a separate terminal:
 
-Em outro terminal:
+```bash
+cd scheduler
+./mvnw spring-boot:run
+```
+
+_The Backend will run at http://localhost:8080_
+
+### Step 4: Frontend (Next.js)
+
+Start the Postgres container locally:
 
 ```bash
 cd frontend
@@ -135,4 +132,6 @@ npm install
 npm run dev
 ```
 
-_O Frontend rodará em http://localhost:3000_
+_The Frontend will run at http://localhost:3000_
+
+Developed by Paulo Roberto A. Gomes.
