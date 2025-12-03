@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Cookies from "js-cookie";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -33,7 +34,12 @@ export default function RegisterPage() {
             );
 
             if (res.ok) {
-                router.push("/login?registered=true");
+                const data = await res.json();
+
+                Cookies.set("room_token", data.token, { expires: 1 / 12 });
+
+                router.push("/");
+                router.refresh();
             } else {
                 const data = await res.json().catch(() => ({}));
                 setError(data.error || "Erro ao criar conta.");
