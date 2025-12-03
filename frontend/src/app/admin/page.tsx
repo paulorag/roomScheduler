@@ -46,7 +46,7 @@ export default function AdminDashboard() {
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
                         headers,
                     }),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, {
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
                         headers,
                     }),
                 ]);
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
 
         try {
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`,
                 {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
         const token = Cookies.get("room_token");
         try {
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}/role`,
+                `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/role`,
                 {
                     method: "PATCH",
                     headers: {
