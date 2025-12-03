@@ -17,8 +17,10 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<User[]>([]);
 
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [msg, setMsg] = useState("");
+    const [feedback, setFeedback] = useState<{
+        text: string;
+        type: "success" | "error";
+    } | null>(null);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
@@ -54,11 +56,17 @@ export default function AdminDashboard() {
 
                 if (resUsers.ok) {
                     setUsers(await resUsers.json());
-                } else if (resUsers.status === 404) {
-                    console.warn("Endpoint de usuários não encontrado.");
+                } else if (resUsers.status === 403 || resUsers.status === 401) {
+                    setFeedback({
+                        text: "Acesso limitado. Algumas funções requerem admin.",
+                        type: "error",
+                    });
                 }
             } catch (err) {
-                setError("Erro de conexão. Verifique o backend.");
+                setFeedback({
+                    text: "Erro de conexão com o servidor.",
+                    type: "error",
+                });
             } finally {
                 setLoading(false);
             }
@@ -67,16 +75,23 @@ export default function AdminDashboard() {
         fetchAllData();
     }, [router]);
 
+    function handleTabChange(tab: "ROOMS" | "USERS" | "BOOKINGS") {
+        setActiveTab(tab);
+        setFeedback(null);
+        setIsFormOpen(false);
+    }
+
     function openEditRoom(room: Room) {
         setEditingRoomId(room.id);
         setRoomName(room.name);
         setRoomCapacity(String(room.capacity));
         setIsFormOpen(true);
-        setMsg("");
+        setFeedback(null);
     }
 
     async function handleSaveRoom(e: React.FormEvent) {
         e.preventDefault();
+        setFeedback(null);
         const token = Cookies.get("room_token");
         const isEditing = editingRoomId !== null;
 
@@ -107,10 +122,16 @@ export default function AdminDashboard() {
                             r.id === editingRoomId ? savedRoom : r
                         )
                     );
-                    setMsg("Sala atualizada com sucesso!");
+                    setFeedback({
+                        text: "Sala atualizada com sucesso!",
+                        type: "success",
+                    });
                 } else {
                     setRooms([...rooms, savedRoom]);
-                    setMsg("Sala criada com sucesso!");
+                    setFeedback({
+                        text: "Sala criada com sucesso!",
+                        type: "success",
+                    });
                 }
 
                 setEditingRoomId(null);
@@ -118,31 +139,65 @@ export default function AdminDashboard() {
                 setRoomCapacity("");
                 setIsFormOpen(false);
             } else {
-                setMsg("Erro ao salvar sala.");
+                setFeedback({
+                    text: "Erro ao salvar sala. Verifique permissões.",
+                    type: "error",
+                });
             }
         } catch (error) {
-            setMsg("Erro de rede.");
+            setFeedback({ text: "Erro de rede.", type: "error" });
         }
     }
 
     async function handleDeleteRoom(id: number) {
-        if (!confirm("Tem certeza?")) return;
+        if (!confirm("Tem certeza? Isso pode apagar histórico de reservas!"))
+            return;
         const token = Cookies.get("room_token");
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setRooms(rooms.filter((r) => r.id !== id));
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            if (res.ok || res.status === 204) {
+                setRooms(rooms.filter((r) => r.id !== id));
+                setFeedback({ text: "Sala excluída.", type: "success" });
+            } else {
+                setFeedback({ text: "Erro ao excluir sala.", type: "error" });
+            }
+        } catch (error) {
+            setFeedback({ text: "Erro de rede.", type: "error" });
+        }
     }
 
     async function handleDeleteUser(id: number) {
         if (!confirm("Banir este usuário permanentemente?")) return;
         const token = Cookies.get("room_token");
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}`,
-            { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (res.ok) setUsers(users.filter((u) => u.id !== id));
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (res.ok) {
+                setUsers(users.filter((u) => u.id !== id));
+                setFeedback({ text: "Usuário removido.", type: "success" });
+            } else {
+                setFeedback({
+                    text: "Erro ao remover usuário.",
+                    type: "error",
+                });
+            }
+        } catch (error) {
+            setFeedback({ text: "Erro de rede.", type: "error" });
+        }
     }
 
     async function handlePromoteUser(id: number, currentRole: string) {
@@ -150,31 +205,57 @@ export default function AdminDashboard() {
         if (!confirm(`Mudar permissão para ${newRole}?`)) return;
 
         const token = Cookies.get("room_token");
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}/role`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ role: newRole }),
-            }
-        );
-
-        if (res.ok) {
-            setUsers(
-                users.map((u) => (u.id === id ? { ...u, role: newRole } : u))
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}/role`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ role: newRole }),
+                }
             );
+
+            if (res.ok) {
+                setUsers(
+                    users.map((u) =>
+                        u.id === id ? { ...u, role: newRole } : u
+                    )
+                );
+                setFeedback({
+                    text: "Permissão alterada com sucesso!",
+                    type: "success",
+                });
+            } else {
+                setFeedback({
+                    text: "Erro ao alterar permissão.",
+                    type: "error",
+                });
+            }
+        } catch (error) {
+            setFeedback({ text: "Erro de rede.", type: "error" });
         }
     }
 
-    if (loading)
+    function formatDate(isoString: string) {
+        return new Date(isoString).toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
+
+    if (loading) {
         return (
             <div className="p-8 text-center text-slate-500">
                 Carregando painel...
             </div>
         );
+    }
 
     return (
         <main className="min-h-screen bg-slate-50 p-4 lg:p-8">
@@ -185,7 +266,7 @@ export default function AdminDashboard() {
 
                 <div className="flex border-b border-slate-200 mb-8 overflow-x-auto">
                     <button
-                        onClick={() => setActiveTab("ROOMS")}
+                        onClick={() => handleTabChange("ROOMS")}
                         className={`px-6 py-3 font-medium text-sm transition border-b-2 ${
                             activeTab === "ROOMS"
                                 ? "border-indigo-600 text-indigo-600"
@@ -195,7 +276,7 @@ export default function AdminDashboard() {
                         Salas
                     </button>
                     <button
-                        onClick={() => setActiveTab("USERS")}
+                        onClick={() => handleTabChange("USERS")}
                         className={`px-6 py-3 font-medium text-sm transition border-b-2 ${
                             activeTab === "USERS"
                                 ? "border-indigo-600 text-indigo-600"
@@ -205,7 +286,7 @@ export default function AdminDashboard() {
                         Usuários
                     </button>
                     <button
-                        onClick={() => setActiveTab("BOOKINGS")}
+                        onClick={() => handleTabChange("BOOKINGS")}
                         className={`px-6 py-3 font-medium text-sm transition border-b-2 ${
                             activeTab === "BOOKINGS"
                                 ? "border-indigo-600 text-indigo-600"
@@ -216,14 +297,15 @@ export default function AdminDashboard() {
                     </button>
                 </div>
 
-                {error && (
-                    <div className="bg-red-50 text-red-700 p-4 rounded mb-4">
-                        {error}
-                    </div>
-                )}
-                {msg && (
-                    <div className="bg-green-50 text-green-700 p-4 rounded mb-4">
-                        {msg}
+                {feedback && (
+                    <div
+                        className={`p-4 rounded-lg mb-6 border ${
+                            feedback.type === "success"
+                                ? "bg-green-50 text-green-700 border-green-100"
+                                : "bg-red-50 text-red-700 border-red-100"
+                        }`}
+                    >
+                        {feedback.text}
                     </div>
                 )}
 
@@ -236,8 +318,9 @@ export default function AdminDashboard() {
                                     setEditingRoomId(null);
                                     setRoomName("");
                                     setRoomCapacity("");
+                                    setFeedback(null);
                                 }}
-                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium"
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium text-sm"
                             >
                                 {isFormOpen
                                     ? "Fechar Formulário"
@@ -256,7 +339,7 @@ export default function AdminDashboard() {
                                     </label>
                                     <input
                                         required
-                                        className="w-full border p-2 rounded text-slate-900"
+                                        className="w-full border p-2 rounded text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
                                         value={roomName}
                                         onChange={(e) =>
                                             setRoomName(e.target.value)
@@ -270,7 +353,7 @@ export default function AdminDashboard() {
                                     <input
                                         required
                                         type="number"
-                                        className="w-full border p-2 rounded text-slate-900"
+                                        className="w-full border p-2 rounded text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
                                         value={roomCapacity}
                                         onChange={(e) =>
                                             setRoomCapacity(e.target.value)
@@ -279,7 +362,7 @@ export default function AdminDashboard() {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="bg-green-600 text-white px-6 py-2 rounded font-semibold w-full md:w-auto h-10"
+                                    className="bg-green-600 text-white px-6 py-2 rounded font-semibold w-full md:w-auto h-10 hover:bg-green-700 transition"
                                 >
                                     {editingRoomId ? "Atualizar" : "Salvar"}
                                 </button>
@@ -290,7 +373,7 @@ export default function AdminDashboard() {
                             {rooms.map((room) => (
                                 <div
                                     key={room.id}
-                                    className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex justify-between items-center"
+                                    className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex justify-between items-center hover:shadow-md transition"
                                 >
                                     <div>
                                         <p className="font-bold text-slate-800">
@@ -303,7 +386,8 @@ export default function AdminDashboard() {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => openEditRoom(room)}
-                                            className="text-indigo-600 hover:bg-indigo-50 p-2 rounded"
+                                            className="text-indigo-600 hover:bg-indigo-50 p-2 rounded transition"
+                                            title="Editar"
                                         >
                                             Editar
                                         </button>
@@ -311,13 +395,19 @@ export default function AdminDashboard() {
                                             onClick={() =>
                                                 handleDeleteRoom(room.id)
                                             }
-                                            className="text-red-600 hover:bg-red-50 p-2 rounded"
+                                            className="text-red-600 hover:bg-red-50 p-2 rounded transition"
+                                            title="Excluir"
                                         >
                                             Excluir
                                         </button>
                                     </div>
                                 </div>
                             ))}
+                            {rooms.length === 0 && (
+                                <p className="text-slate-500 col-span-3 text-center italic py-4">
+                                    Nenhuma sala cadastrada.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
@@ -345,7 +435,7 @@ export default function AdminDashboard() {
                                 {users.map((user) => (
                                     <tr
                                         key={user.id}
-                                        className="hover:bg-slate-50"
+                                        className="hover:bg-slate-50 transition"
                                     >
                                         <td className="px-6 py-4 text-sm font-medium text-slate-900">
                                             {user.name}
@@ -372,7 +462,7 @@ export default function AdminDashboard() {
                                                         user.role
                                                     )
                                                 }
-                                                className="text-indigo-600 hover:text-indigo-900"
+                                                className="text-indigo-600 hover:text-indigo-900 hover:underline"
                                             >
                                                 {user.role === "ADMIN"
                                                     ? "Rebaixar"
@@ -382,7 +472,7 @@ export default function AdminDashboard() {
                                                 onClick={() =>
                                                     handleDeleteUser(user.id)
                                                 }
-                                                className="text-red-600 hover:text-red-900"
+                                                className="text-red-600 hover:text-red-900 hover:underline"
                                             >
                                                 Banir
                                             </button>
@@ -394,6 +484,7 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
+                {/* --- CONTEÚDO: RESERVAS --- */}
                 {activeTab === "BOOKINGS" && (
                     <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-slate-200">
                         <table className="min-w-full divide-y divide-slate-200">
@@ -406,32 +497,47 @@ export default function AdminDashboard() {
                                         Usuário
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">
-                                        Data
+                                        Início
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">
+                                        Fim
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
-                                {bookings.map((booking) => (
-                                    <tr
-                                        key={booking.id}
-                                        className="hover:bg-slate-50"
-                                    >
-                                        <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                                            {booking.roomName}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-500">
-                                            {booking.userName} <br />{" "}
-                                            <span className="text-xs text-slate-400">
-                                                {booking.userEmail}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-500">
-                                            {new Date(
-                                                booking.startAt
-                                            ).toLocaleString("pt-BR")}
+                                {bookings.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan={4}
+                                            className="px-6 py-8 text-center text-slate-500"
+                                        >
+                                            Nenhuma reserva encontrada.
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    bookings.map((booking) => (
+                                        <tr
+                                            key={booking.id}
+                                            className="hover:bg-slate-50 transition"
+                                        >
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                                                {booking.roomName}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-500">
+                                                {booking.userName} <br />{" "}
+                                                <span className="text-xs text-slate-400">
+                                                    {booking.userEmail}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-500">
+                                                {formatDate(booking.startAt)}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-500">
+                                                {formatDate(booking.endAt)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
