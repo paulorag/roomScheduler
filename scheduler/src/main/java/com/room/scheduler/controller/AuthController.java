@@ -45,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest data) {
+    public ResponseEntity<LoginResponse> register(@RequestBody @Valid RegisterRequest data) {
         if (this.userRepository.findByEmail(data.email()).isPresent()) {
             return ResponseEntity.badRequest().build();
         }
@@ -60,7 +60,8 @@ public class AuthController {
 
         this.userRepository.save(newUser);
 
-        return ResponseEntity.ok().build();
-    }
+        var token = tokenService.generateToken(newUser);
 
+        return ResponseEntity.ok(new LoginResponse(token));
+    }
 }
