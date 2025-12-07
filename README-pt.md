@@ -21,6 +21,10 @@ O projeto foi arquitetado simulando um ambiente de produção real, utilizando *
 -   **Aplicação (Frontend):** [Acessar RoomScheduler (Vercel)](https://room-scheduler-gold.vercel.app/)
 -   **API (Backend):** [Status da API (Render)](https://room-scheduler-api.onrender.com/api/rooms)
 
+> **⚠️ Nota sobre o Deploy (Render Free Tier):**
+> A API Backend (Java) está hospedada no **plano gratuito do Render**.
+> A primeira requisição (login/cadastro) **pode levar até 60 segundos** para acordar o servidor. Por favor, aguarde um momento na primeira interação.
+
 ---
 
 ## 🏗️ Arquitetura e Tecnologias

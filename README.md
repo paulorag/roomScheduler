@@ -21,7 +21,7 @@ The project was architected simulating a real production environment, using **Hy
 -   **API (Backend):** [API Status (Render)](https://room-scheduler-api.onrender.com/api/rooms)
 
 > **⚠️ Deployment Note (Render Free Tier):**
-> The Backend API (Node.js) is hosted on **Render's free tier**.
+> The Backend API (Java) is hosted on **Render's free tier**.
 > The first request (login/signup) **may take up to 60 seconds** to wake up the server. Please be patient on the first interaction.
 
 ---
