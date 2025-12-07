@@ -92,7 +92,7 @@ export default function MyBookings() {
         );
 
     return (
-        <main className="min-h-screen bg-slate-50 p-4 lg:p-8">
+        <main className="min-h-screen py-8 p-4 lg:p-8">
             <div className="max-w-4xl mx-auto">
                 <h1 className="text-3xl font-bold text-slate-800 mb-2">
                     Minhas Reservas
@@ -101,7 +101,7 @@ export default function MyBookings() {
                     Gerencie seus agendamentos futuros.
                 </p>
 
-                <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6 text-sm text-blue-700 flex gap-2">
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-sm text-blue-800 flex gap-2 shadow-sm">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
@@ -122,40 +122,47 @@ export default function MyBookings() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-700 p-4 rounded mb-4">
+                    <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-4 border border-red-200 shadow-sm">
                         {error}
                     </div>
                 )}
                 {success && (
-                    <div className="bg-green-50 text-green-700 p-4 rounded mb-4">
+                    <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-4 border border-green-200 shadow-sm">
                         {success}
                     </div>
                 )}
 
                 <div className="space-y-4">
                     {bookings.length === 0 ? (
-                        <p className="text-center text-slate-500 py-8">
-                            Você ainda não tem reservas.
-                        </p>
+                        <div className="bg-white p-12 rounded-xl shadow-md border border-slate-200 text-center">
+                            <p className="text-slate-500">
+                                Você ainda não tem reservas.
+                            </p>
+                        </div>
                     ) : (
                         bookings.map((booking) => {
                             const isCancellable = canCancel(booking.startAt);
                             return (
                                 <div
                                     key={booking.id}
-                                    className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4"
+                                    className="bg-white p-6 rounded-xl shadow-md border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-lg transition-shadow duration-200"
                                 >
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800">
                                             {booking.roomName}
                                         </h3>
-                                        <p className="text-slate-500 text-sm mt-1">
-                                            {formatDate(booking.startAt)} até{" "}
-                                            {
-                                                formatDate(booking.endAt).split(
-                                                    " "
-                                                )[1]
-                                            }
+                                        <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
+                                            <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium text-xs">
+                                                {formatDate(booking.startAt)}
+                                            </span>
+                                            até
+                                            <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium text-xs">
+                                                {
+                                                    formatDate(
+                                                        booking.endAt
+                                                    ).split(" ")[1]
+                                                }
+                                            </span>
                                         </p>
                                     </div>
 
@@ -164,7 +171,7 @@ export default function MyBookings() {
                                             onClick={() =>
                                                 handleCancel(booking.id)
                                             }
-                                            className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition text-sm font-medium cursor-pointer"
+                                            className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition text-sm font-medium cursor-pointer shadow-sm"
                                         >
                                             Cancelar Reserva
                                         </button>

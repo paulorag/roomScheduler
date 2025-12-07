@@ -11,17 +11,16 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<"ROOMS" | "USERS" | "BOOKINGS">(
         "ROOMS"
     );
-
     const [bookings, setBookings] = useState<BookingSummary[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [users, setUsers] = useState<User[]>([]);
-
     const [loading, setLoading] = useState(true);
     const [feedback, setFeedback] = useState<{
         text: string;
         type: "success" | "error";
     } | null>(null);
 
+    // Form states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
     const [roomName, setRoomName] = useState("");
@@ -37,7 +36,6 @@ export default function AdminDashboard() {
         async function fetchAllData() {
             try {
                 const headers = { Authorization: `Bearer ${token}` };
-
                 const [resRooms, resBookings, resUsers] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
                         headers,
@@ -71,7 +69,6 @@ export default function AdminDashboard() {
                 setLoading(false);
             }
         }
-
         fetchAllData();
     }, [router]);
 
@@ -94,11 +91,9 @@ export default function AdminDashboard() {
         setFeedback(null);
         const token = Cookies.get("room_token");
         const isEditing = editingRoomId !== null;
-
         const url = isEditing
             ? `${process.env.NEXT_PUBLIC_API_URL}/rooms/${editingRoomId}`
             : `${process.env.NEXT_PUBLIC_API_URL}/rooms`;
-
         const method = isEditing ? "PUT" : "POST";
 
         try {
@@ -133,7 +128,6 @@ export default function AdminDashboard() {
                         type: "success",
                     });
                 }
-
                 setEditingRoomId(null);
                 setRoomName("");
                 setRoomCapacity("");
@@ -150,7 +144,6 @@ export default function AdminDashboard() {
         if (!confirm("Tem certeza? Isso pode apagar histórico de reservas!"))
             return;
         const token = Cookies.get("room_token");
-
         try {
             const res = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`,
@@ -159,7 +152,6 @@ export default function AdminDashboard() {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
-
             if (res.ok || res.status === 204) {
                 setRooms(rooms.filter((r) => r.id !== id));
                 setFeedback({ text: "Sala excluída.", type: "success" });
@@ -174,7 +166,6 @@ export default function AdminDashboard() {
     async function handleDeleteUser(id: number) {
         if (!confirm("Banir este usuário permanentemente?")) return;
         const token = Cookies.get("room_token");
-
         try {
             const res = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`,
@@ -200,7 +191,6 @@ export default function AdminDashboard() {
     async function handlePromoteUser(id: number, currentRole: string) {
         const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
         if (!confirm(`Mudar permissão para ${newRole}?`)) return;
-
         const token = Cookies.get("room_token");
         try {
             const res = await fetch(
@@ -214,7 +204,6 @@ export default function AdminDashboard() {
                     body: JSON.stringify({ role: newRole }),
                 }
             );
-
             if (res.ok) {
                 setUsers(
                     users.map((u) =>
@@ -243,7 +232,6 @@ export default function AdminDashboard() {
             )
         )
             return;
-
         const token = Cookies.get("room_token");
         try {
             const res = await fetch(
@@ -253,7 +241,6 @@ export default function AdminDashboard() {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
-
             if (res.ok || res.status === 204) {
                 setBookings(bookings.filter((b) => b.id !== id));
                 setFeedback({
@@ -281,60 +268,46 @@ export default function AdminDashboard() {
         });
     }
 
-    if (loading) {
+    if (loading)
         return (
             <div className="p-8 text-center text-slate-500">
                 Carregando painel...
             </div>
         );
-    }
 
     return (
-        <main className="min-h-screen bg-slate-50 p-4 lg:p-8">
+        <main className="min-h-screen py-8 p-4 lg:p-8">
             <div className="max-w-6xl mx-auto">
                 <h1 className="text-3xl font-bold text-slate-800 mb-6">
                     Painel Administrativo
                 </h1>
 
-                <div className="flex border-b border-slate-200 mb-8 overflow-x-auto">
-                    <button
-                        onClick={() => handleTabChange("ROOMS")}
-                        className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
-                            activeTab === "ROOMS"
-                                ? "border-indigo-600 text-indigo-600"
-                                : "border-transparent text-slate-500 hover:text-slate-700"
-                        }`}
-                    >
-                        Salas
-                    </button>
-                    <button
-                        onClick={() => handleTabChange("USERS")}
-                        className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
-                            activeTab === "USERS"
-                                ? "border-indigo-600 text-indigo-600"
-                                : "border-transparent text-slate-500 hover:text-slate-700"
-                        }`}
-                    >
-                        Usuários
-                    </button>
-                    <button
-                        onClick={() => handleTabChange("BOOKINGS")}
-                        className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
-                            activeTab === "BOOKINGS"
-                                ? "border-indigo-600 text-indigo-600"
-                                : "border-transparent text-slate-500 hover:text-slate-700"
-                        }`}
-                    >
-                        Todas as Reservas
-                    </button>
+                <div className="flex border-b border-slate-300 mb-8 overflow-x-auto">
+                    {["ROOMS", "USERS", "BOOKINGS"].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => handleTabChange(tab as any)}
+                            className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
+                                activeTab === tab
+                                    ? "border-indigo-600 text-indigo-600"
+                                    : "border-transparent text-slate-500 hover:text-slate-700"
+                            }`}
+                        >
+                            {tab === "ROOMS"
+                                ? "Salas"
+                                : tab === "USERS"
+                                ? "Usuários"
+                                : "Todas as Reservas"}
+                        </button>
+                    ))}
                 </div>
 
                 {feedback && (
                     <div
                         className={`p-4 rounded-lg mb-6 border animate-in fade-in slide-in-from-top-2 ${
                             feedback.type === "success"
-                                ? "bg-green-50 text-green-700 border-green-100"
-                                : "bg-red-50 text-red-700 border-red-100"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : "bg-red-50 text-red-700 border-red-200"
                         }`}
                     >
                         {feedback.text}
@@ -363,7 +336,7 @@ export default function AdminDashboard() {
                         {isFormOpen && (
                             <form
                                 onSubmit={handleSaveRoom}
-                                className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-end animate-in fade-in"
+                                className="bg-white p-6 rounded-xl shadow-md border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-end animate-in fade-in"
                             >
                                 <div className="flex-1 w-full">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -401,11 +374,11 @@ export default function AdminDashboard() {
                             </form>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {rooms.map((room) => (
                                 <div
                                     key={room.id}
-                                    className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex justify-between items-center hover:shadow-md transition"
+                                    className="bg-white p-6 rounded-xl shadow-md border border-slate-200 flex justify-between items-center hover:shadow-lg transition-shadow duration-200"
                                 >
                                     <div>
                                         <p className="font-bold text-slate-800">
@@ -445,9 +418,9 @@ export default function AdminDashboard() {
                 )}
 
                 {activeTab === "USERS" && (
-                    <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-slate-200">
+                    <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
                         <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-slate-50">
+                            <thead className="bg-slate-50/50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">
                                         Nome
@@ -517,9 +490,9 @@ export default function AdminDashboard() {
                 )}
 
                 {activeTab === "BOOKINGS" && (
-                    <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-slate-200">
+                    <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
                         <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-slate-50">
+                            <thead className="bg-slate-50/50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">
                                         Sala
