@@ -20,6 +20,10 @@ The project was architected simulating a real production environment, using **Hy
 -   **Application (Frontend):** [Access RoomScheduler (Vercel)](https://room-scheduler-gold.vercel.app/)
 -   **API (Backend):** [API Status (Render)](https://room-scheduler-api.onrender.com/api/rooms)
 
+> **⚠️ Deployment Note (Render Free Tier):**
+> The Backend API (Node.js) is hosted on **Render's free tier**.
+> The first request (login/signup) **may take up to 60 seconds** to wake up the server. Please be patient on the first interaction.
+
 ---
 
 ## 🏗️ Architecture & Technologies
