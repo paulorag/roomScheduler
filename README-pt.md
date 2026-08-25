@@ -1,145 +1,129 @@
 # RoomScheduler 🏢
 
-> Sistema corporativo Full Stack de gestão de espaços e agendamentos com controle de concorrência e segurança RBAC.
-
-![Status](https://img.shields.io/badge/Status-Completed-success)
-![Java](https://img.shields.io/badge/Java-21-orange)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+[![Status](https://img.shields.io/badge/Status-Conclu%C3%ADdo-success)]()
+[![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-blue)]()
+[![Java](https://img.shields.io/badge/Java-21-orange)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3%2F4-green)](https://spring.io/projects/spring-boot)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
 
 [Read this document in English](README.md)
 
+**Sistema corporativo Full Stack de gestão e agendamento de salas de reunião com prevenção matemática de conflitos (Double Booking Prevention), segurança RBAC e pipeline de CI automatizado.**
+
+---
+
 ## 📖 Sobre o Projeto
 
-O **RoomScheduler** é uma solução completa para resolver o problema de conflitos em reservas de salas de reunião. Diferente de um CRUD simples, este sistema implementa uma **lógica de agendamento stateful**, garantindo matematicamente que duas pessoas nunca ocupem o mesmo espaço no mesmo horário (Double Booking Prevention).
-
-O projeto foi arquitetado simulando um ambiente de produção real, utilizando **Deploy Híbrido** em três nuvens diferentes para otimizar custos, performance e segurança.
+O **RoomScheduler** é uma solução completa para resolver o problema de sobreposição e conflitos em reservas de salas de reunião corporativas. Diferente de um CRUD tradicional, este sistema implementa uma **lógica de agendamento stateful**, impedindo conflitos diretamente no banco de dados através do algoritmo: `StartA < EndB && EndA > StartB`.
 
 ### 🌐 Links de Produção
 
--   **Aplicação (Frontend):** [Acessar RoomScheduler (Vercel)](https://room-scheduler-gold.vercel.app/)
--   **API (Backend):** [Status da API (Render)](https://room-scheduler-api.onrender.com/api/rooms)
+- **Aplicação (Frontend):** [Acessar RoomScheduler (Vercel)](https://room-scheduler-gold.vercel.app/)
+- **Status da API (Backend):** [Status da API (Render)](https://room-scheduler-api.onrender.com/api/rooms)
 
 > **⚠️ Nota sobre o Deploy (Render Free Tier):**
-> A API Backend (Java) está hospedada no **plano gratuito do Render**.
-> A primeira requisição (login/cadastro) **pode levar até 60 segundos** para acordar o servidor. Por favor, aguarde um momento na primeira interação.
+> A API Backend está hospedada no plano gratuito do Render. A primeira requisição após inatividade pode levar até 60 segundos para inicializar.
 
 ---
 
 ## 🏗️ Arquitetura e Tecnologias
 
-O sistema segue uma arquitetura distribuída e "Cloud Native":
-
 ### Backend (API RESTful)
-
--   **Java 21 & Spring Boot 3:** Core da aplicação robusto e tipado.
--   **Spring Security + JWT:** Autenticação Stateless e controle de permissão (RBAC - Role Based Access Control).
--   **Hibernate/JPA:** Camada de persistência otimizada.
--   **Docker:** Containerização com Multi-stage build (Maven image -> JRE Alpine image) para deploy leve.
--   **Hospedagem:** Render.
+- **Java 21 & Spring Boot**: Núcleo desacoplado em camadas (`Controller -> Service -> Repository`) com isolamento por DTOs.
+- **Spring Security + JWT**: Autenticação Stateless e controle de acesso baseado em papéis (**RBAC** - `USER` vs `ADMIN`).
+- **Flyway Migrations**: Versionamento de schema de banco de dados com índices de performance (`idx_bookings_room_time`, `idx_bookings_user`).
+- **Swagger / OpenAPI 3**: Documentação interativa disponível em `/swagger-ui.html`.
+- **Spring Data JPA & Hibernate**: Validação de entidades e queries otimizadas contra PostgreSQL.
+- **JUnit 5 & Mockito**: Suíte de testes com banco H2 em memória.
 
 ### Frontend (SPA/SSR)
+- **Next.js 16 (App Router)** & **React 19**: Interface moderna com Server e Client Components.
+- **TypeScript**: Tipagem estrita alinhada com as entidades e respostas do backend.
+- **Next.js Edge Middleware**: Proteção de rotas e validação de permissões nas rotas `/admin` e `/my-bookings`.
+- **Cliente HTTP Centralizado**: Camada tipada (`src/services/api.ts`) com tratamento uniforme de erros.
+- **Tailwind CSS**: Estilização responsiva e tema corporativo limpo.
 
--   **Next.js 15 (App Router):** Framework React moderno com Server Components.
--   **TypeScript:** Tipagem estrita compartilhada com o Backend via interfaces.
--   **Tailwind CSS:** Estilização responsiva com tema corporativo "Clean".
--   **Middleware:** Proteção de rotas e gestão segura de Cookies.
--   **Hospedagem:** Vercel (Edge Network).
-
-### Dados
-
--   **PostgreSQL (Neon Tech):** Banco de dados Serverless na nuvem para alta disponibilidade.
+### DevOps & Infraestrutura
+- **Docker Compose**: Orquestração do PostgreSQL (porta `5434`) e container do backend.
+- **GitHub Actions CI**: Pipeline automatizado que executa os testes do backend e o build do Next.js a cada push/pull request.
 
 ---
 
 ## ✨ Funcionalidades Principais
 
-### 🔒 Segurança & Identidade
-
--   **Autenticação JWT:** Login seguro com token assinado e Cookies HttpOnly.
--   **RBAC (Roles):** Diferenciação estrita entre `USER` (comum) e `ADMIN` (gestor).
--   **Proteção de Rotas:** Middleware no Frontend impede acesso não autorizado a páginas administrativas.
+### 🔒 Segurança & Controle de Acesso
+- **Autenticação JWT**: Geração e validação de tokens seguros.
+- **RBAC Estrito**: Diferenciação entre usuários comuns (`USER`) e administradores (`ADMIN`).
+- **Middleware no Edge**: Bloqueio de acesso no servidor antes da renderização da página.
 
 ### 📅 Gestão de Reservas Inteligente
+- **Double Booking Prevention**: Algoritmo de verificação de sobreposição no banco de dados.
+- **Regra de SLA (24h)**: Cancelamento permitido apenas com no mínimo 24 horas de antecedência para usuários padrão.
+- **Admin Override**: Administradores têm permissão para cancelar qualquer reserva a qualquer momento.
+- **Duração Mínima de 15 Minutos**: Validação no formulário e no backend.
 
--   **Algoritmo de Conflito:** Impede reservas sobrepostas no banco de dados (`StartA < EndB && EndA > StartB`).
--   **Regras de Negócio (SLA):** Cancelamento permitido apenas com 24h de antecedência para usuários comuns.
--   **Super Admin:** Administradores possuem override para cancelar qualquer reserva a qualquer momento.
-
-### ⚙️ Painel Administrativo Completo
-
--   **Gestão de Salas:** Criar, Editar e Excluir espaços físicos.
--   **Gestão de Usuários:** Listar usuários, promover para Admin ou banir do sistema.
--   **Auditoria:** Visualização global de todos os agendamentos.
+### ⚙️ Painel Administrativo
+- **Gestão de Espaços**: Cadastro, edição e exclusão de salas (com proteção contra exclusão de salas com reservas ativas).
+- **Gestão de Usuários**: Listagem, alteração de privilégios (`USER`/`ADMIN`) e banimento.
+- **Busca e Filtros em Tempo Real**: Filtragem ágil de salas, usuários e reservas.
 
 ---
 
-## 📸 Screenshots
+## 📚 Documentação da API (Swagger UI)
 
-### Dashboard Administrativo
-
-![Admin Dashboard](./assets/dashboard.png)
-_Visão geral das reservas e gestão de salas/usuários._
-
-### Minhas Reservas (Regra de 24h)
-
-![My Bookings](./assets/my-bookings.png)
-_Interface do usuário mostrando bloqueio de cancelamento para prazos curtos._
-
-### Landing Page
-
-![Home](./assets/home.png)
-_Listagem pública de salas disponíveis._
+Com o backend rodando localmente, acesse a documentação interativa:
+- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 ---
 
 ## 🚀 Como Rodar Localmente
 
-Siga estes passos para executar o projeto na sua máquina:
-
 ### Pré-requisitos
+- **Docker & Docker Compose**
+- **Java 21 (JDK)**
+- **Node.js 20+**
 
--   Docker & Docker Compose
--   Java 21 (JDK)
--   Node.js 18+
-
-### Passo 1: Clonar e Configurar
-
+### Passo 1: Clonar o Repositório
 ```bash
-git clone [https://github.com/paulorag/room-scheduler.git](https://github.com/paulorag/room-scheduler.git)
+git clone https://github.com/paulorag/room-scheduler.git
 cd room-scheduler
 ```
 
-### Passo 2: Banco de Dados (Docker)
-
-Suba o container do Postgres localmente:
-
+### Passo 2: Iniciar o Banco de Dados (Docker)
 ```bash
-docker-compose up -d
+docker compose up -d postgres
 ```
+*(O PostgreSQL roda na porta mapeada `5434` para evitar conflitos de porta na máquina local)*
 
-### Passo 3: Backend (Spring Boot)
-
-Em um terminal separado:
-
+### Passo 3: Iniciar o Backend (Spring Boot)
 ```bash
 cd scheduler
 ./mvnw spring-boot:run
 ```
+*A API estará disponível em http://localhost:8080*
 
-_O Backend rodará em http://localhost:8080_
-
-### Passo 4: Frontend (Next.js)
-
+### Passo 4: Iniciar o Frontend (Next.js)
 Em outro terminal:
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+*O Frontend estará disponível em http://localhost:3000*
 
-_O Frontend rodará em http://localhost:3000_
+### Passo 5: Executar os Testes
+```bash
+# Testes do backend
+cd scheduler
+./mvnw test
+
+# Verificação do build do frontend
+cd ../frontend
+npm run build
+```
+
+---
 
 Desenvolvido por Paulo Roberto A. Gomes.
