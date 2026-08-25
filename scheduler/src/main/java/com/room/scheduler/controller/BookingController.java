@@ -23,8 +23,9 @@ public class BookingController {
     }
 
     @PostMapping
-    public Booking create(@RequestBody @Valid BookingRequest request) {
-        return bookingService.createBooking(request);
+    public ResponseEntity<BookingResponse> create(@RequestBody @Valid BookingRequest request) {
+        BookingResponse response = bookingService.createBooking(request);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(response);
     }
 
     @GetMapping

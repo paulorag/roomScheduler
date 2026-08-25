@@ -2,6 +2,8 @@ package com.room.scheduler.repository;
 
 import com.room.scheduler.model.Booking;
 import com.room.scheduler.model.Room;
+import com.room.scheduler.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,21 @@ public class BookingRepositoryTest {
     @Autowired
     private RoomRepository roomRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private User testUser;
+
+    @BeforeEach
+    void setUp() {
+        User user = new User();
+        user.setName("Usuario Teste");
+        user.setEmail("teste@email.com");
+        user.setPassword("123456");
+        user.setRole("USER");
+        testUser = userRepository.save(user);
+    }
+
     @Test
     @DisplayName("Deve retornar TRUE quando houver conflito de horário")
     void shouldReturnTrueWhenBookingOverlaps() {
@@ -30,8 +47,9 @@ public class BookingRepositoryTest {
 
         Booking booking = new Booking();
         booking.setRoom(room);
+        booking.setUser(testUser);
         booking.setStartAt(LocalDateTime.of(2025, 12, 20, 14, 0));
-        booking.setEndAt(LocalDateTime.of(20205, 12, 20, 15, 0));
+        booking.setEndAt(LocalDateTime.of(2025, 12, 20, 15, 0));
         bookingRepository.save(booking);
 
         boolean exists = bookingRepository.existsOverlappingBooking(room.getId(),
@@ -50,6 +68,7 @@ public class BookingRepositoryTest {
 
         Booking booking = new Booking();
         booking.setRoom(room);
+        booking.setUser(testUser);
         booking.setStartAt(LocalDateTime.of(2025, 12, 20, 14, 0));
         booking.setEndAt(LocalDateTime.of(2025, 12, 20, 15, 0));
         bookingRepository.save(booking);

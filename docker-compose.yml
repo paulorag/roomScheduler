@@ -1,17 +1,39 @@
-version: "3.8"
-
 services:
-    postgres:
-        image: postgres:15-alpine
-        container_name: room-scheduler-db
-        ports:
-            - "5432:5432"
-        environment:
-            - POSTGRES_DB=rooms_db
-            - POSTGRES_USER=admin
-            - POSTGRES_PASSWORD=admin
-        volumes:
-            - postgres_data:/var/lib/postgresql/postgres_data
+  postgres:
+    image: postgres:15-alpine
+    container_name: room-scheduler-db
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    environment:
+      - POSTGRES_DB=rooms_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d rooms_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./scheduler
+      dockerfile: Dockerfile
+    container_name: room-scheduler-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/rooms_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - JWT_SECRET=minha-chave-secreta-padrao-local
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - full
 
 volumes:
-    postgres_data:
+  postgres_data:

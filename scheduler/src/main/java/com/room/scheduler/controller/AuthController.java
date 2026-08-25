@@ -47,7 +47,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(@RequestBody @Valid RegisterRequest data) {
         if (this.userRepository.findByEmail(data.email()).isPresent()) {
-            return ResponseEntity.badRequest().build();
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "Email já cadastrado");
         }
 
         String encryptedPassword = passwordEncoder.encode(data.password());
@@ -56,12 +57,12 @@ public class AuthController {
         newUser.setName(data.name());
         newUser.setEmail(data.email());
         newUser.setPassword(encryptedPassword);
-        newUser.setRole(data.role() != null ? data.role() : "USER");
+        newUser.setRole("USER");
 
         this.userRepository.save(newUser);
 
         var token = tokenService.generateToken(newUser);
 
-        return ResponseEntity.ok(new LoginResponse(token));
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(new LoginResponse(token));
     }
 }

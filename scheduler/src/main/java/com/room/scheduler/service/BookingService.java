@@ -41,7 +41,7 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking createBooking(BookingRequest request) {
+    public BookingResponse createBooking(BookingRequest request) {
         if (!request.getEndAt().isAfter(request.getStartAt().plusMinutes(15))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A reserva deve ter no mínimo 15 minutos");
         }
@@ -64,7 +64,8 @@ public class BookingService {
         booking.setStartAt(request.getStartAt());
         booking.setEndAt(request.getEndAt());
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        return mapToResponse(savedBooking);
     }
 
     @Transactional
