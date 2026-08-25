@@ -26,4 +26,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("endAt") LocalDateTime endAt);
 
     List<Booking> findByUserOrderByStartAtDesc(User user);
+
+    boolean existsByRoomId(Long roomId);
+
+    boolean existsByUserId(Long userId);
 }
