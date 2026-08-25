@@ -111,6 +111,7 @@ export const api = {
             request<void>(`/bookings/${id}`, {
                 method: "DELETE",
             }),
+        downloadIcsUrl: (id: number) => `${API_BASE_URL}/bookings/${id}/ics`,
     },
     users: {
         list: () => request<User[]>("/users"),

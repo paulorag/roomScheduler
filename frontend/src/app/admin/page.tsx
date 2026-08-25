@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { BookingSummary, Room, User } from "@/types";
 import { api, ApiError } from "@/services/api";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -27,6 +28,21 @@ export default function AdminDashboard() {
     const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
     const [roomName, setRoomName] = useState("");
     const [roomCapacity, setRoomCapacity] = useState("");
+
+    // Modal state
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText?: string;
+        isDanger?: boolean;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: () => {},
+    });
 
     useEffect(() => {
         const token = Cookies.get("room_token");
@@ -119,79 +135,145 @@ export default function AdminDashboard() {
         }
     }
 
-    async function handleDeleteRoom(id: number) {
-        if (!confirm("Tem certeza que deseja excluir esta sala?")) return;
-        setFeedback(null);
-
-        try {
-            await api.rooms.delete(id);
-            setRooms(rooms.filter((r) => r.id !== id));
-            setFeedback({ text: "Sala excluída com sucesso.", type: "success" });
-        } catch (error) {
-            if (error instanceof ApiError) {
-                setFeedback({ text: error.message, type: "error" });
-            } else {
-                setFeedback({ text: "Erro ao excluir sala.", type: "error" });
-            }
-        }
+    function requestDeleteRoom(id: number) {
+        setModalConfig({
+            isOpen: true,
+            title: "Excluir Sala",
+            message: "Tem certeza de que deseja excluir esta sala? Se houver reservas vinculadas, a exclusão será bloqueada.",
+            confirmText: "Sim, Excluir",
+            isDanger: true,
+            onConfirm: async () => {
+                setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                try {
+                    await api.rooms.delete(id);
+                    setRooms(rooms.filter((r) => r.id !== id));
+                    setFeedback({ text: "Sala excluída com sucesso.", type: "success" });
+                } catch (error) {
+                    if (error instanceof ApiError) {
+                        setFeedback({ text: error.message, type: "error" });
+                    } else {
+                        setFeedback({ text: "Erro ao excluir sala.", type: "error" });
+                    }
+                }
+            },
+        });
     }
 
-    async function handleDeleteUser(id: number) {
-        if (!confirm("Tem certeza que deseja banir este usuário permanentemente?")) return;
-        setFeedback(null);
-
-        try {
-            await api.users.delete(id);
-            setUsers(users.filter((u) => u.id !== id));
-            setFeedback({ text: "Usuário removido com sucesso.", type: "success" });
-        } catch (error) {
-            if (error instanceof ApiError) {
-                setFeedback({ text: error.message, type: "error" });
-            } else {
-                setFeedback({ text: "Erro ao remover usuário.", type: "error" });
-            }
-        }
+    function requestDeleteUser(id: number) {
+        setModalConfig({
+            isOpen: true,
+            title: "Banir Usuário",
+            message: "Tem certeza de que deseja remover este usuário permanentemente do sistema?",
+            confirmText: "Sim, Banir",
+            isDanger: true,
+            onConfirm: async () => {
+                setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                try {
+                    await api.users.delete(id);
+                    setUsers(users.filter((u) => u.id !== id));
+                    setFeedback({ text: "Usuário removido com sucesso.", type: "success" });
+                } catch (error) {
+                    if (error instanceof ApiError) {
+                        setFeedback({ text: error.message, type: "error" });
+                    } else {
+                        setFeedback({ text: "Erro ao remover usuário.", type: "error" });
+                    }
+                }
+            },
+        });
     }
 
-    async function handlePromoteUser(id: number, currentRole: string) {
+    function requestPromoteUser(id: number, currentRole: string) {
         const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
-        if (!confirm(`Mudar permissão para ${newRole}?`)) return;
-        setFeedback(null);
-
-        try {
-            await api.users.updateRole(id, newRole);
-            setUsers(users.map((u) => (u.id === id ? { ...u, role: newRole } : u)));
-            setFeedback({
-                text: "Permissão alterada com sucesso!",
-                type: "success",
-            });
-        } catch (error) {
-            if (error instanceof ApiError) {
-                setFeedback({ text: error.message, type: "error" });
-            } else {
-                setFeedback({ text: "Erro ao alterar permissão.", type: "error" });
-            }
-        }
+        setModalConfig({
+            isOpen: true,
+            title: "Alterar Permissão",
+            message: `Deseja alterar o nível de permissão deste usuário para ${newRole}?`,
+            confirmText: `Sim, mudar para ${newRole}`,
+            isDanger: false,
+            onConfirm: async () => {
+                setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                try {
+                    await api.users.updateRole(id, newRole);
+                    setUsers(users.map((u) => (u.id === id ? { ...u, role: newRole } : u)));
+                    setFeedback({
+                        text: "Permissão alterada com sucesso!",
+                        type: "success",
+                    });
+                } catch (error) {
+                    if (error instanceof ApiError) {
+                        setFeedback({ text: error.message, type: "error" });
+                    } else {
+                        setFeedback({ text: "Erro ao alterar permissão.", type: "error" });
+                    }
+                }
+            },
+        });
     }
 
-    async function handleCancelBooking(id: number) {
-        if (!confirm("Como Admin, você pode cancelar qualquer reserva imediatamente. Confirmar?")) return;
-        setFeedback(null);
+    function requestCancelBooking(id: number) {
+        setModalConfig({
+            isOpen: true,
+            title: "Cancelar Reserva (Admin)",
+            message: "Como Administrador, você pode cancelar qualquer reserva imediatamente. Confirmar cancelamento?",
+            confirmText: "Sim, Cancelar Reserva",
+            isDanger: true,
+            onConfirm: async () => {
+                setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                try {
+                    await api.bookings.cancel(id);
+                    setBookings(bookings.filter((b) => b.id !== id));
+                    setFeedback({
+                        text: "Reserva cancelada pelo administrador.",
+                        type: "success",
+                    });
+                } catch (error) {
+                    if (error instanceof ApiError) {
+                        setFeedback({ text: error.message, type: "error" });
+                    } else {
+                        setFeedback({ text: "Erro ao cancelar reserva.", type: "error" });
+                    }
+                }
+            },
+        });
+    }
 
-        try {
-            await api.bookings.cancel(id);
-            setBookings(bookings.filter((b) => b.id !== id));
-            setFeedback({
-                text: "Reserva cancelada pelo administrador.",
-                type: "success",
-            });
-        } catch (error) {
-            if (error instanceof ApiError) {
-                setFeedback({ text: error.message, type: "error" });
-            } else {
-                setFeedback({ text: "Erro ao cancelar reserva.", type: "error" });
-            }
-        }
+    function exportBookingsCsv() {
+        const headers = ["ID", "Sala", "Usuario", "Email", "Inicio", "Fim"];
+        const rows = bookings.map((b) => [
+            b.id,
+            `"${b.roomName}"`,
+            `"${b.userName}"`,
+            `"${b.userEmail}"`,
+            `"${b.startAt}"`,
+            `"${b.endAt}"`,
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `reservas_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportUsersCsv() {
+        const headers = ["ID", "Nome", "Email", "Role"];
+        const rows = users.map((u) => [
+            u.id,
+            `"${u.name}"`,
+            `"${u.email}"`,
+            `"${u.role}"`,
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `usuarios_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function formatDate(isoString: string) {
@@ -354,7 +436,7 @@ export default function AdminDashboard() {
                                             Editar
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteRoom(room.id)}
+                                            onClick={() => requestDeleteRoom(room.id)}
                                             className="text-red-600 hover:bg-red-50 p-2 rounded transition cursor-pointer"
                                             title="Excluir"
                                         >
@@ -374,7 +456,7 @@ export default function AdminDashboard() {
 
                 {activeTab === "USERS" && (
                     <div>
-                        <div className="mb-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
                             <input
                                 type="text"
                                 placeholder="Buscar usuários por nome, email ou permissão..."
@@ -382,6 +464,13 @@ export default function AdminDashboard() {
                                 value={userSearch}
                                 onChange={(e) => setUserSearch(e.target.value)}
                             />
+
+                            <button
+                                onClick={exportUsersCsv}
+                                className="w-full sm:w-auto px-4 py-2 bg-slate-100 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-200 transition text-sm font-semibold flex items-center gap-2 cursor-pointer shadow-sm"
+                            >
+                                📊 Exportar CSV
+                            </button>
                         </div>
 
                         <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
@@ -427,13 +516,13 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-right text-sm font-medium flex justify-end gap-3">
                                                 <button
-                                                    onClick={() => handlePromoteUser(user.id, user.role)}
+                                                    onClick={() => requestPromoteUser(user.id, user.role)}
                                                     className="text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
                                                 >
                                                     {user.role === "ADMIN" ? "Rebaixar" : "Promover"}
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteUser(user.id)}
+                                                    onClick={() => requestDeleteUser(user.id)}
                                                     className="text-red-600 hover:text-red-900 hover:underline cursor-pointer"
                                                 >
                                                     Banir
@@ -456,7 +545,7 @@ export default function AdminDashboard() {
 
                 {activeTab === "BOOKINGS" && (
                     <div>
-                        <div className="mb-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
                             <input
                                 type="text"
                                 placeholder="Buscar reservas por sala ou usuário..."
@@ -464,6 +553,13 @@ export default function AdminDashboard() {
                                 value={bookingSearch}
                                 onChange={(e) => setBookingSearch(e.target.value)}
                             />
+
+                            <button
+                                onClick={exportBookingsCsv}
+                                className="w-full sm:w-auto px-4 py-2 bg-slate-100 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-200 transition text-sm font-semibold flex items-center gap-2 cursor-pointer shadow-sm"
+                            >
+                                📊 Exportar CSV
+                            </button>
                         </div>
 
                         <div className="bg-white shadow-md rounded-xl overflow-hidden border border-slate-200">
@@ -510,7 +606,7 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-right text-sm font-medium">
                                                 <button
-                                                    onClick={() => handleCancelBooking(booking.id)}
+                                                    onClick={() => requestCancelBooking(booking.id)}
                                                     className="text-red-600 hover:text-red-900 hover:underline cursor-pointer"
                                                 >
                                                     Cancelar
@@ -531,6 +627,16 @@ export default function AdminDashboard() {
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                confirmText={modalConfig.confirmText}
+                isDanger={modalConfig.isDanger}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+            />
         </main>
     );
 }

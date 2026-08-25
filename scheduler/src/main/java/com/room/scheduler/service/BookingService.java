@@ -7,14 +7,16 @@ import com.room.scheduler.model.Room;
 import com.room.scheduler.model.User;
 import com.room.scheduler.repository.BookingRepository;
 import com.room.scheduler.repository.RoomRepository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,10 +36,25 @@ public class BookingService {
                 .toList();
     }
 
+    public Page<BookingResponse> listAllPaged(Pageable pageable) {
+        return bookingRepository.findAllByOrderByStartAtDesc(pageable)
+                .map(this::mapToResponse);
+    }
+
     public List<BookingResponse> listMyBookings(User user) {
         return bookingRepository.findByUserOrderByStartAtDesc(user).stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    public Page<BookingResponse> listMyBookingsPaged(User user, Pageable pageable) {
+        return bookingRepository.findByUserOrderByStartAtDesc(user, pageable)
+                .map(this::mapToResponse);
+    }
+
+    public Booking getBookingEntity(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva não encontrada"));
     }
 
     @Transactional

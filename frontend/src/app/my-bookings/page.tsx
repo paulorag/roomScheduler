@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { BookingSummary } from "@/types";
 import { api, ApiError } from "@/services/api";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function MyBookings() {
     const router = useRouter();
@@ -12,6 +13,7 @@ export default function MyBookings() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [cancellingBookingId, setCancellingBookingId] = useState<number | null>(null);
 
     useEffect(() => {
         const token = Cookies.get("room_token");
@@ -37,8 +39,10 @@ export default function MyBookings() {
         fetchMyBookings();
     }, [router]);
 
-    async function handleCancel(id: number) {
-        if (!confirm("Tem certeza que deseja cancelar esta reserva?")) return;
+    async function handleConfirmCancel() {
+        if (cancellingBookingId === null) return;
+        const id = cancellingBookingId;
+        setCancellingBookingId(null);
         setSuccess("");
         setError("");
 
@@ -152,29 +156,50 @@ export default function MyBookings() {
                                         </p>
                                     </div>
 
-                                    {isCancellable ? (
-                                        <button
-                                            onClick={() =>
-                                                handleCancel(booking.id)
-                                            }
-                                            className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition text-sm font-medium cursor-pointer shadow-sm"
+                                    <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                                        <a
+                                            href={api.bookings.downloadIcsUrl(booking.id)}
+                                            className="px-3 py-2 bg-slate-50 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-100 transition text-sm font-medium flex items-center gap-1 shadow-sm"
+                                            title="Baixar convite para Google Agenda / Outlook"
                                         >
-                                            Cancelar Reserva
-                                        </button>
-                                    ) : (
-                                        <span
-                                            className="px-4 py-2 bg-slate-100 text-slate-400 rounded-lg text-sm font-medium border border-slate-200 cursor-not-allowed select-none"
-                                            title="Menos de 24h para o início"
-                                        >
-                                            Não cancelável
-                                        </span>
-                                    )}
+                                            📅 .ICS
+                                        </a>
+
+                                        {isCancellable ? (
+                                            <button
+                                                onClick={() =>
+                                                    setCancellingBookingId(booking.id)
+                                                }
+                                                className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition text-sm font-medium cursor-pointer shadow-sm"
+                                            >
+                                                Cancelar Reserva
+                                            </button>
+                                        ) : (
+                                            <span
+                                                className="px-4 py-2 bg-slate-100 text-slate-400 rounded-lg text-sm font-medium border border-slate-200 cursor-not-allowed select-none"
+                                                title="Menos de 24h para o início"
+                                            >
+                                                Não cancelável
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })
                     )}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={cancellingBookingId !== null}
+                title="Cancelar Reserva"
+                message="Tem certeza de que deseja cancelar esta reserva? Esta ação liberará o horário para outros usuários."
+                confirmText="Sim, Cancelar"
+                cancelText="Voltar"
+                isDanger={true}
+                onConfirm={handleConfirmCancel}
+                onCancel={() => setCancellingBookingId(null)}
+            />
         </main>
     );
 }

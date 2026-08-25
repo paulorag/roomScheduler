@@ -5,6 +5,8 @@ import com.room.scheduler.dto.UserResponse;
 import com.room.scheduler.model.User;
 import com.room.scheduler.repository.BookingRepository;
 import com.room.scheduler.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,11 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    public Page<UserResponse> listAllPaged(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Transactional
