@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { BookingSummary } from "@/types";
+import { api, ApiError } from "@/services/api";
 
 export default function MyBookings() {
     const router = useRouter();
@@ -21,19 +22,14 @@ export default function MyBookings() {
 
         async function fetchMyBookings() {
             try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/bookings/my`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }
-                );
-                if (res.ok) {
-                    setBookings(await res.json());
+                const data = await api.bookings.listMy();
+                setBookings(data);
+            } catch (err) {
+                if (err instanceof ApiError) {
+                    setError(err.message);
                 } else {
                     setError("Erro ao carregar suas reservas.");
                 }
-            } catch (err) {
-                setError("Erro de conexão.");
             } finally {
                 setLoading(false);
             }
@@ -46,25 +42,16 @@ export default function MyBookings() {
         setSuccess("");
         setError("");
 
-        const token = Cookies.get("room_token");
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/bookings/${id}`,
-                {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-
-            if (res.ok) {
-                setBookings(bookings.filter((b) => b.id !== id));
-                setSuccess("Reserva cancelada com sucesso.");
-            } else {
-                const data = await res.json().catch(() => ({}));
-                setError(data.error || "Não foi possível cancelar.");
-            }
+            await api.bookings.cancel(id);
+            setBookings(bookings.filter((b) => b.id !== id));
+            setSuccess("Reserva cancelada com sucesso.");
         } catch (err) {
-            setError("Erro de rede.");
+            if (err instanceof ApiError) {
+                setError(err.message);
+            } else {
+                setError("Não foi possível cancelar a reserva.");
+            }
         }
     }
 
@@ -116,8 +103,7 @@ export default function MyBookings() {
                     </svg>
                     <span>
                         Política de Cancelamento: Reservas só podem ser
-                        canceladas com <strong>24 horas de antecedência</strong>
-                        .
+                        canceladas com <strong>24 horas de antecedência</strong>.
                     </span>
                 </div>
 

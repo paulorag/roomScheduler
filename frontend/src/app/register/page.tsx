@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import { api, ApiError } from "@/services/api";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -19,33 +20,22 @@ export default function RegisterPage() {
         setError("");
 
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        password,
-                        role: "USER",
-                    }),
-                }
-            );
+            const data = await api.auth.register({
+                name,
+                email,
+                password,
+            });
 
-            if (res.ok) {
-                const data = await res.json();
+            Cookies.set("room_token", data.token, { expires: 1 / 12 });
 
-                Cookies.set("room_token", data.token, { expires: 1 / 12 });
-
-                router.push("/");
-                router.refresh();
-            } else {
-                const data = await res.json().catch(() => ({}));
-                setError(data.error || "Erro ao criar conta.");
-            }
+            router.push("/");
+            router.refresh();
         } catch (err) {
-            setError("Erro de conexão.");
+            if (err instanceof ApiError) {
+                setError(err.message);
+            } else {
+                setError("Erro de conexão.");
+            }
         } finally {
             setLoading(false);
         }
@@ -119,7 +109,7 @@ export default function RegisterPage() {
                 </form>
 
                 <p className="text-center text-sm text-slate-500 mt-6">
-                    Já tem uma conta?{" "}
+                    Não tem uma conta?{" "}
                     <Link
                         href="/login"
                         className="text-indigo-600 font-semibold hover:underline cursor-pointer"

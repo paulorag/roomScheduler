@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import BookingForm from "@/components/BookingForm";
 import { Room } from "@/types";
 
+import { api } from "@/services/api";
+
 export default function Home() {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
@@ -11,15 +13,8 @@ export default function Home() {
     useEffect(() => {
         async function fetchRooms() {
             try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/rooms`,
-                    {
-                        cache: "no-store",
-                    }
-                );
-                if (res.ok) {
-                    setRooms(await res.json());
-                }
+                const data = await api.rooms.list();
+                setRooms(data);
             } catch (error) {
                 console.error("Erro ao buscar salas", error);
             } finally {

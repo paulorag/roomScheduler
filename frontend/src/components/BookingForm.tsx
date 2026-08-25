@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { api, ApiError } from "@/services/api";
 
 interface BookingFormProps {
     roomId: number;
@@ -14,7 +15,8 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
 
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    const defaultStart = now.toISOString().slice(0, 16);
+    const minStart = now.toISOString().slice(0, 16);
+    const defaultStart = minStart;
     const defaultEnd = new Date(now.getTime() + 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16);
@@ -30,7 +32,6 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
 
     async function handleReserve(e: React.FormEvent) {
         e.preventDefault();
-        setLoading(true);
         setMessage(null);
 
         const token = Cookies.get("room_token");
@@ -40,58 +41,55 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                 type: "error",
             });
             setTimeout(() => router.push("/login"), 1500);
-            setLoading(false);
             return;
         }
 
+        const startDate = new Date(startAt);
+        const endDate = new Date(endAt);
+        const diffMinutes = (endDate.getTime() - startDate.getTime()) / (1000 * 60);
+
+        if (diffMinutes < 15) {
+            setMessage({
+                text: "A reserva deve ter duração mínima de 15 minutos.",
+                type: "error",
+            });
+            return;
+        }
+
+        if (startDate < new Date()) {
+            setMessage({
+                text: "A data de início deve ser no futuro.",
+                type: "error",
+            });
+            return;
+        }
+
+        setLoading(true);
+
         try {
-            const payload = {
+            await api.bookings.create({
                 roomId,
                 startAt: startAt + ":00",
                 endAt: endAt + ":00",
-            };
-
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/bookings`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
-
-            let data;
-            try {
-                data = await res.json();
-            } catch (e) {
-                data = null;
-            }
-
-            if (res.ok) {
-                setMessage({
-                    text: "Reserva confirmada com sucesso!",
-                    type: "success",
-                });
-                setTimeout(() => {
-                    setIsOpen(false);
-                    setMessage(null);
-                }, 2000);
-            } else {
-                const errorMsg =
-                    data?.error ||
-                    data?.message ||
-                    JSON.stringify(data) ||
-                    "Erro ao realizar reserva.";
-                setMessage({ text: errorMsg, type: "error" });
-            }
-        } catch (error) {
-            setMessage({
-                text: "Erro de conexão com o servidor.",
-                type: "error",
             });
+
+            setMessage({
+                text: "Reserva confirmada com sucesso!",
+                type: "success",
+            });
+            setTimeout(() => {
+                setIsOpen(false);
+                setMessage(null);
+            }, 2000);
+        } catch (error) {
+            if (error instanceof ApiError) {
+                setMessage({ text: error.message, type: "error" });
+            } else {
+                setMessage({
+                    text: "Erro de conexão com o servidor.",
+                    type: "error",
+                });
+            }
         } finally {
             setLoading(false);
         }
@@ -127,6 +125,7 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                             <input
                                 type="datetime-local"
                                 required
+                                min={minStart}
                                 className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-600 bg-white"
                                 value={startAt}
                                 onChange={(e) => setStartAt(e.target.value)}
@@ -140,6 +139,7 @@ export default function BookingForm({ roomId, roomName }: BookingFormProps) {
                             <input
                                 type="datetime-local"
                                 required
+                                min={startAt || minStart}
                                 className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-600 bg-white"
                                 value={endAt}
                                 onChange={(e) => setEndAt(e.target.value)}

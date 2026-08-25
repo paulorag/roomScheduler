@@ -4,6 +4,7 @@ import { useState } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { api, ApiError } from "@/services/api";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -18,28 +19,16 @@ export default function LoginPage() {
         setError("");
 
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                }
-            );
-
-            if (res.ok) {
-                const data = await res.json();
-                Cookies.set("room_token", data.token, { expires: 1 / 12 });
-                router.push("/");
-            } else {
-                const data = await res.json().catch(() => ({}));
-                setError(data.error || "Credenciais inválidas.");
-            }
+            const data = await api.auth.login({ email, password });
+            Cookies.set("room_token", data.token, { expires: 1 / 12 });
+            router.push("/");
+            router.refresh();
         } catch (err) {
-            console.error(err);
-            setError(
-                "Erro ao conectar com o servidor. Verifique se o backend está rodando."
-            );
+            if (err instanceof ApiError) {
+                setError(err.message);
+            } else {
+                setError("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+            }
         } finally {
             setLoading(false);
         }
