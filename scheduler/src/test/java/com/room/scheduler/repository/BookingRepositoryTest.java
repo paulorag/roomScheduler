@@ -1,5 +1,6 @@
 package com.room.scheduler.repository;
 
+import com.room.scheduler.config.JpaConfig;
 import com.room.scheduler.model.Booking;
 import com.room.scheduler.model.Room;
 import com.room.scheduler.model.User;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@Import(JpaConfig.class)
 public class BookingRepositoryTest {
     @Autowired
     private BookingRepository bookingRepository;

@@ -25,9 +25,7 @@ jobs:
 
       - name: Run Backend Tests
         working-directory: scheduler
-        run: |
-          chmod +x mvnw
-          ./mvnw -B test
+        run: mvn -B test
 
   frontend-build:
     name: Frontend Lint & Build (Next.js)
