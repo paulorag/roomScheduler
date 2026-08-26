@@ -37,6 +37,9 @@ public class BookingServiceTest {
     @Mock
     private RoomRepository roomRepository;
 
+    @Mock
+    private NotificationService notificationService;
+
     @InjectMocks
     private BookingService bookingService;
 

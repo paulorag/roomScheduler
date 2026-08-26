@@ -23,10 +23,12 @@ import java.util.List;
 public class BookingService {
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
+    private final NotificationService notificationService;
 
-    public BookingService(BookingRepository bookingRepository, RoomRepository roomRepository) {
+    public BookingService(BookingRepository bookingRepository, RoomRepository roomRepository, NotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
+        this.notificationService = notificationService;
     }
 
     public List<BookingResponse> listAll() {
@@ -82,6 +84,11 @@ public class BookingService {
         booking.setEndAt(request.getEndAt());
 
         Booking savedBooking = bookingRepository.save(booking);
+
+        if (notificationService != null) {
+            notificationService.sendBookingConfirmation(savedBooking);
+        }
+
         return mapToResponse(savedBooking);
     }
 
@@ -109,6 +116,10 @@ public class BookingService {
         }
 
         bookingRepository.delete(booking);
+
+        if (notificationService != null) {
+            notificationService.sendCancellationNotice(booking, user);
+        }
     }
 
     private BookingResponse mapToResponse(Booking booking) {

@@ -2,28 +2,40 @@
 
 import { useEffect, useState } from "react";
 import BookingForm from "@/components/BookingForm";
-import { Room } from "@/types";
-
+import { BookingSummary, Room } from "@/types";
 import { api } from "@/services/api";
 
 export default function Home() {
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [bookings, setBookings] = useState<BookingSummary[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
 
     useEffect(() => {
-        async function fetchRooms() {
+        async function fetchData() {
             try {
-                const data = await api.rooms.list();
-                setRooms(data);
+                const [roomsData, bookingsData] = await Promise.all([
+                    api.rooms.list(),
+                    api.bookings.listAll().catch(() => []),
+                ]);
+                setRooms(roomsData);
+                setBookings(bookingsData);
             } catch (error) {
-                console.error("Erro ao buscar salas", error);
+                console.error("Erro ao buscar dados", error);
             } finally {
                 setLoading(false);
             }
         }
 
-        fetchRooms();
+        fetchData();
     }, []);
+
+    function formatTime(isoString: string) {
+        return new Date(isoString).toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
 
     if (loading) {
         return (
@@ -39,7 +51,6 @@ export default function Home() {
         <main className="min-h-screen bg-slate-100">
             {/* --- HERO SECTION --- */}
             <section className="bg-slate-900 py-20 md:py-32 text-center px-4 shadow-xl border-b border-slate-800 relative overflow-hidden">
-                {/* Efeito de fundo sutil (opcional) */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-indigo-900/20 to-transparent pointer-events-none"></div>
 
                 <div className="relative z-10 max-w-4xl mx-auto">
@@ -64,7 +75,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* --- SEÇÃO DE DIFERENCIAIS (Conteúdo Novo) --- */}
+            {/* --- SEÇÃO DE DIFERENCIAIS --- */}
             <section className="py-16 px-6 bg-white border-b border-slate-200">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -147,8 +158,69 @@ export default function Home() {
                 </div>
             </section>
 
+            {/* --- SEÇÃO DE TIMELINE DE AGENDAMENTOS --- */}
+            <section className="py-12 px-6 max-w-7xl mx-auto">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-800">
+                                📅 Grade Diária de Ocupação
+                            </h3>
+                            <p className="text-sm text-slate-500">
+                                Veja os blocos de horário ocupados para planejar sua reunião.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-slate-600">Data:</label>
+                            <input
+                                type="date"
+                                className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-800 bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        {rooms.map((room) => {
+                            const roomDayBookings = bookings.filter((b) => {
+                                return b.roomName === room.name && b.startAt.startsWith(selectedDate);
+                            });
+
+                            return (
+                                <div key={room.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="font-bold text-slate-800">{room.name}</span>
+                                        <span className="text-xs text-slate-500">{roomDayBookings.length} agendamento(s) hoje</span>
+                                    </div>
+
+                                    {roomDayBookings.length === 0 ? (
+                                        <div className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg w-fit border border-green-200">
+                                            ✓ Totalmente livre para agendamento
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {roomDayBookings.map((b) => (
+                                                <div
+                                                    key={b.id}
+                                                    className="text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs"
+                                                >
+                                                    <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block"></span>
+                                                    {formatTime(b.startAt)} - {formatTime(b.endAt)} ({b.userName})
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
             {/* --- LISTA DE SALAS (ID para Scroll) --- */}
-            <section id="salas" className="max-w-7xl mx-auto py-16 px-6">
+            <section id="salas" className="max-w-7xl mx-auto py-8 px-6 pb-16">
                 <div className="flex items-center justify-between mb-8 border-l-4 border-indigo-600 pl-4">
                     <h2 className="text-2xl font-bold text-slate-800">
                         Espaços Disponíveis

@@ -10,7 +10,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 export default function AdminDashboard() {
     const router = useRouter();
 
-    const [activeTab, setActiveTab] = useState<"ROOMS" | "USERS" | "BOOKINGS">("ROOMS");
+    const [activeTab, setActiveTab] = useState<"ROOMS" | "USERS" | "BOOKINGS" | "ANALYTICS">("ROOMS");
     const [bookings, setBookings] = useState<BookingSummary[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
         fetchAllData();
     }, [router]);
 
-    function handleTabChange(tab: "ROOMS" | "USERS" | "BOOKINGS") {
+    function handleTabChange(tab: "ROOMS" | "USERS" | "BOOKINGS" | "ANALYTICS") {
         setActiveTab(tab);
         setFeedback(null);
         setIsFormOpen(false);
@@ -304,6 +304,18 @@ export default function AdminDashboard() {
             booking.userEmail.toLowerCase().includes(bookingSearch.toLowerCase())
     );
 
+    // Analytics calculations
+    const totalHoursBooked = bookings.reduce((acc, b) => {
+        const start = new Date(b.startAt).getTime();
+        const end = new Date(b.endAt).getTime();
+        return acc + Math.max(0, (end - start) / (1000 * 60 * 60));
+    }, 0);
+
+    const roomBookingCounts: Record<string, number> = {};
+    bookings.forEach((b) => {
+        roomBookingCounts[b.roomName] = (roomBookingCounts[b.roomName] || 0) + 1;
+    });
+
     if (loading)
         return (
             <div className="p-8 text-center text-slate-500">
@@ -319,13 +331,13 @@ export default function AdminDashboard() {
                 </h1>
 
                 <div className="flex border-b border-slate-300 mb-8 overflow-x-auto">
-                    {(["ROOMS", "USERS", "BOOKINGS"] as const).map((tab) => (
+                    {(["ROOMS", "USERS", "BOOKINGS", "ANALYTICS"] as const).map((tab) => (
                         <button
                             key={tab}
                             onClick={() => handleTabChange(tab)}
-                            className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer ${
+                            className={`px-6 py-3 font-medium text-sm transition border-b-2 cursor-pointer whitespace-nowrap ${
                                 activeTab === tab
-                                    ? "border-indigo-600 text-indigo-600"
+                                    ? "border-indigo-600 text-indigo-600 font-bold"
                                     : "border-transparent text-slate-500 hover:text-slate-700"
                             }`}
                         >
@@ -333,7 +345,9 @@ export default function AdminDashboard() {
                                 ? "Salas"
                                 : tab === "USERS"
                                 ? "Usuários"
-                                : "Todas as Reservas"}
+                                : tab === "BOOKINGS"
+                                ? "Todas as Reservas"
+                                : "📈 Métricas & Ocupação"}
                         </button>
                     ))}
                 </div>
@@ -623,6 +637,63 @@ export default function AdminDashboard() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "ANALYTICS" && (
+                    <div className="space-y-8 animate-in fade-in">
+                        {/* Metric Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                                <p className="text-sm font-medium text-slate-500">Total de Reservas</p>
+                                <p className="text-3xl font-extrabold text-indigo-600 mt-2">{bookings.length}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                                <p className="text-sm font-medium text-slate-500">Salas Cadastradas</p>
+                                <p className="text-3xl font-extrabold text-slate-800 mt-2">{rooms.length}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                                <p className="text-sm font-medium text-slate-500">Usuários Ativos</p>
+                                <p className="text-3xl font-extrabold text-slate-800 mt-2">{users.length}</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                                <p className="text-sm font-medium text-slate-500">Horas Reservadas</p>
+                                <p className="text-3xl font-extrabold text-green-600 mt-2">{totalHoursBooked.toFixed(1)}h</p>
+                            </div>
+                        </div>
+
+                        {/* Distribution and Ranking */}
+                        <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">
+                                Utilização e Distribuição por Sala
+                            </h3>
+
+                            <div className="space-y-4">
+                                {rooms.map((room) => {
+                                    const count = roomBookingCounts[room.name] || 0;
+                                    const percent = bookings.length > 0 ? (count / bookings.length) * 100 : 0;
+
+                                    return (
+                                        <div key={room.id} className="space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium text-slate-700">{room.name}</span>
+                                                <span className="text-slate-500">{count} reserva(s) ({percent.toFixed(0)}%)</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                                                <div
+                                                    className="bg-indigo-600 h-3 rounded-full transition-all duration-500"
+                                                    style={{ width: `${percent}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {rooms.length === 0 && (
+                                    <p className="text-slate-500 text-center py-4">Nenhuma sala para exibir métricas.</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
