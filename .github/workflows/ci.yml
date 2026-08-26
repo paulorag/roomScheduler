@@ -21,10 +21,13 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+          cache-dependency-path: scheduler/pom.xml
 
       - name: Run Backend Tests
         working-directory: scheduler
-        run: ./mvnw test
+        run: |
+          chmod +x mvnw
+          ./mvnw -B test
 
   frontend-build:
     name: Frontend Lint & Build (Next.js)
