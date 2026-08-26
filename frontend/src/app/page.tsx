@@ -49,7 +49,6 @@ export default function Home() {
 
     return (
         <main className="min-h-screen bg-slate-100">
-            {/* --- HERO SECTION --- */}
             <section className="bg-slate-900 py-20 md:py-32 text-center px-4 shadow-xl border-b border-slate-800 relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-indigo-900/20 to-transparent pointer-events-none"></div>
 
@@ -75,7 +74,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* --- SEÇÃO DE DIFERENCIAIS --- */}
             <section className="py-16 px-6 bg-white border-b border-slate-200">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -158,7 +156,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* --- SEÇÃO DE TIMELINE DE AGENDAMENTOS --- */}
             <section className="py-12 px-6 max-w-7xl mx-auto">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
@@ -219,7 +216,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* --- LISTA DE SALAS (ID para Scroll) --- */}
             <section id="salas" className="max-w-7xl mx-auto py-8 px-6 pb-16">
                 <div className="flex items-center justify-between mb-8 border-l-4 border-indigo-600 pl-4">
                     <h2 className="text-2xl font-bold text-slate-800">
@@ -236,14 +232,12 @@ export default function Home() {
                             key={room.id}
                             className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-slate-200 group"
                         >
-                            {/* Cabeçalho do Card */}
                             <div className="bg-slate-50 p-5 border-b border-slate-100 group-hover:bg-indigo-50/50 transition-colors">
                                 <h3 className="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">
                                     {room.name}
                                 </h3>
                             </div>
 
-                            {/* Corpo do Card */}
                             <div className="p-6">
                                 <div className="flex items-center gap-2 text-slate-600 mb-8 bg-slate-50 w-fit px-3 py-1 rounded-full border border-slate-200">
                                     <svg

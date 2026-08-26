@@ -2,7 +2,6 @@ package com.room.scheduler.controller;
 
 import com.room.scheduler.dto.BookingRequest;
 import com.room.scheduler.dto.BookingResponse;
-import com.room.scheduler.model.Booking;
 import com.room.scheduler.model.User;
 import com.room.scheduler.service.BookingService;
 import com.room.scheduler.service.CalendarExportService;
@@ -60,7 +59,7 @@ public class BookingController {
 
     @GetMapping("/{id}/ics")
     public ResponseEntity<byte[]> exportIcs(@PathVariable Long id) {
-        Booking booking = bookingService.getBookingEntity(id);
+        var booking = bookingService.getBookingEntity(id);
         String icsContent = calendarExportService.generateIcs(booking);
 
         return ResponseEntity.ok()

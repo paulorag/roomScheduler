@@ -150,7 +150,6 @@ export default function RegisterPage() {
                         />
                     </div>
 
-                    {/* Requirements checklist */}
                     {password.length > 0 && (
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2 animate-in fade-in">
                             <p className="font-semibold text-slate-700 mb-1">Requisitos de segurança:</p>

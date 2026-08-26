@@ -29,7 +29,6 @@ export default function AdminDashboard() {
     const [roomName, setRoomName] = useState("");
     const [roomCapacity, setRoomCapacity] = useState("");
 
-    // Modal state
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;
         title: string;
@@ -304,7 +303,6 @@ export default function AdminDashboard() {
             booking.userEmail.toLowerCase().includes(bookingSearch.toLowerCase())
     );
 
-    // Analytics calculations
     const totalHoursBooked = bookings.reduce((acc, b) => {
         const start = new Date(b.startAt).getTime();
         const end = new Date(b.endAt).getTime();
@@ -643,7 +641,6 @@ export default function AdminDashboard() {
 
                 {activeTab === "ANALYTICS" && (
                     <div className="space-y-8 animate-in fade-in">
-                        {/* Metric Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                                 <p className="text-sm font-medium text-slate-500">Total de Reservas</p>
@@ -663,7 +660,6 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Distribution and Ranking */}
                         <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
                             <h3 className="text-lg font-bold text-slate-800 mb-4">
                                 Utilização e Distribuição por Sala
