@@ -112,6 +112,31 @@ export const api = {
                 method: "DELETE",
             }),
         downloadIcsUrl: (id: number) => `${API_BASE_URL}/bookings/${id}/ics`,
+        downloadIcs: async (id: number) => {
+            const token = Cookies.get("room_token");
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/bookings/${id}/ics`, {
+                headers,
+            });
+
+            if (!response.ok) {
+                throw new ApiError("Erro ao baixar o convite de calendário.", response.status);
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.download = `reserva-${id}.ics`;
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(link);
+        },
     },
     users: {
         list: () => request<User[]>("/users"),
