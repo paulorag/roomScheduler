@@ -59,6 +59,20 @@ public class BookingService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva não encontrada"));
     }
 
+    public Booking getBookingForExport(Long id, User currentUser) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva não encontrada"));
+
+        boolean isOwner = booking.getUser().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser.getRole().equals("ADMIN");
+
+        if (!isOwner && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não tem permissão para acessar este convite de calendário.");
+        }
+
+        return booking;
+    }
+
     @Transactional
     public BookingResponse createBooking(BookingRequest request) {
         if (!request.getEndAt().isAfter(request.getStartAt().plusMinutes(15))) {

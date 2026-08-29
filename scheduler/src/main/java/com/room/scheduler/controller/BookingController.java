@@ -59,7 +59,8 @@ public class BookingController {
 
     @GetMapping("/{id}/ics")
     public ResponseEntity<byte[]> exportIcs(@PathVariable Long id) {
-        var booking = bookingService.getBookingEntity(id);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var booking = bookingService.getBookingForExport(id, user);
         String icsContent = calendarExportService.generateIcs(booking);
 
         return ResponseEntity.ok()

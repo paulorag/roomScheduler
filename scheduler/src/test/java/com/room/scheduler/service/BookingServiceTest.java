@@ -222,4 +222,55 @@ public class BookingServiceTest {
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         verify(bookingRepository, never()).delete(any());
     }
+
+    @Test
+    @DisplayName("Deve permitir dono da reserva obter entidade para exportar iCalendar")
+    void shouldAllowOwnerToGetBookingForExport() {
+        Booking booking = new Booking();
+        booking.setId(100L);
+        booking.setUser(standardUser);
+        booking.setRoom(testRoom);
+
+        when(bookingRepository.findById(100L)).thenReturn(Optional.of(booking));
+
+        Booking result = bookingService.getBookingForExport(100L, standardUser);
+        assertNotNull(result);
+        assertEquals(100L, result.getId());
+    }
+
+    @Test
+    @DisplayName("Deve permitir administrador obter entidade para exportar iCalendar de qualquer reserva")
+    void shouldAllowAdminToGetBookingForExport() {
+        Booking booking = new Booking();
+        booking.setId(100L);
+        booking.setUser(standardUser);
+        booking.setRoom(testRoom);
+
+        when(bookingRepository.findById(100L)).thenReturn(Optional.of(booking));
+
+        Booking result = bookingService.getBookingForExport(100L, adminUser);
+        assertNotNull(result);
+        assertEquals(100L, result.getId());
+    }
+
+    @Test
+    @DisplayName("Deve lançar FORBIDDEN quando usuário tentar obter reserva de terceiro para exportar iCalendar")
+    void shouldThrowForbiddenWhenUserExportsOtherUserBooking() {
+        User anotherUser = new User();
+        anotherUser.setId(99L);
+        anotherUser.setRole("USER");
+
+        Booking booking = new Booking();
+        booking.setId(100L);
+        booking.setUser(anotherUser);
+        booking.setRoom(testRoom);
+
+        when(bookingRepository.findById(100L)).thenReturn(Optional.of(booking));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                bookingService.getBookingForExport(100L, standardUser)
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
 }
