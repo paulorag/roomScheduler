@@ -237,17 +237,26 @@ export default function AdminDashboard() {
         });
     }
 
+    function sanitizeCsvField(value: string | number | undefined | null): string {
+        if (value === undefined || value === null) return '""';
+        const str = String(value);
+        const formulaChars = ["=", "+", "-", "@", "\t", "\r"];
+        const needsEscape = formulaChars.some((char) => str.startsWith(char));
+        const escaped = needsEscape ? `'${str}` : str;
+        return `"${escaped.replace(/"/g, '""')}"`;
+    }
+
     function exportBookingsCsv() {
         const headers = ["ID", "Sala", "Usuario", "Email", "Inicio", "Fim"];
         const rows = bookings.map((b) => [
             b.id,
-            `"${b.roomName}"`,
-            `"${b.userName}"`,
-            `"${b.userEmail}"`,
-            `"${b.startAt}"`,
-            `"${b.endAt}"`,
+            sanitizeCsvField(b.roomName),
+            sanitizeCsvField(b.userName),
+            sanitizeCsvField(b.userEmail),
+            sanitizeCsvField(b.startAt),
+            sanitizeCsvField(b.endAt),
         ]);
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
@@ -261,11 +270,11 @@ export default function AdminDashboard() {
         const headers = ["ID", "Nome", "Email", "Role"];
         const rows = users.map((u) => [
             u.id,
-            `"${u.name}"`,
-            `"${u.email}"`,
-            `"${u.role}"`,
+            sanitizeCsvField(u.name),
+            sanitizeCsvField(u.email),
+            sanitizeCsvField(u.role),
         ]);
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);

@@ -43,4 +43,28 @@ public class CalendarExportServiceTest {
         assertTrue(ics.contains("END:VEVENT"));
         assertTrue(ics.contains("END:VCALENDAR"));
     }
+
+    @Test
+    @DisplayName("Deve sanitizar quebras de linha e caracteres especiais para evitar CRLF injection")
+    void shouldSanitizeCrlfInIcsContent() {
+        User user = new User();
+        user.setName("Usuario Malicioso\r\nATTENDEE;CN=Hacker:mailto:hacker@evil.com\nNovoCampo:Valor");
+
+        Room room = new Room();
+        room.setName("Sala Alpha\r\nLOCATION:Sala Injetada");
+
+        Booking booking = new Booking();
+        booking.setId(99L);
+        booking.setUser(user);
+        booking.setRoom(room);
+        booking.setStartAt(LocalDateTime.of(2026, 9, 10, 14, 0));
+        booking.setEndAt(LocalDateTime.of(2026, 9, 10, 15, 0));
+
+        String ics = calendarExportService.generateIcs(booking);
+
+        assertNotNull(ics);
+        assertFalse(ics.contains("\r\nATTENDEE;CN=Hacker"));
+        assertFalse(ics.contains("\nNovoCampo:Valor"));
+        assertFalse(ics.contains("\r\nLOCATION:Sala Injetada"));
+    }
 }

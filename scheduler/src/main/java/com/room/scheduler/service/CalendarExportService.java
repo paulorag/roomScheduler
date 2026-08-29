@@ -17,6 +17,9 @@ public class CalendarExportService {
         String dtStamp = (booking.getCreatedAt() != null ? booking.getCreatedAt() : booking.getStartAt())
                 .atZone(ZoneOffset.systemDefault()).withZoneSameInstant(ZoneOffset.UTC).format(ICS_DATE_FORMAT);
 
+        String roomName = sanitizeIcsText(booking.getRoom().getName());
+        String userName = sanitizeIcsText(booking.getUser().getName());
+
         return "BEGIN:VCALENDAR\r\n" +
                 "VERSION:2.0\r\n" +
                 "PRODID:-//RoomScheduler//EN\r\n" +
@@ -27,11 +30,22 @@ public class CalendarExportService {
                 "DTSTAMP:" + dtStamp + "\r\n" +
                 "DTSTART:" + dtStart + "\r\n" +
                 "DTEND:" + dtEnd + "\r\n" +
-                "SUMMARY:Reserva: " + booking.getRoom().getName() + "\r\n" +
-                "DESCRIPTION:Reserva de sala no RoomScheduler confirmada para " + booking.getUser().getName() + ".\r\n" +
-                "LOCATION:" + booking.getRoom().getName() + "\r\n" +
+                "SUMMARY:Reserva: " + roomName + "\r\n" +
+                "DESCRIPTION:Reserva de sala no RoomScheduler confirmada para " + userName + ".\r\n" +
+                "LOCATION:" + roomName + "\r\n" +
                 "STATUS:CONFIRMED\r\n" +
                 "END:VEVENT\r\n" +
                 "END:VCALENDAR\r\n";
+    }
+
+    private String sanitizeIcsText(String input) {
+        if (input == null) return "";
+        return input.replace("\\", "\\\\")
+                    .replace(";", "\\;")
+                    .replace(",", "\\,")
+                    .replace("\r\n", " ")
+                    .replace("\n", " ")
+                    .replace("\r", " ")
+                    .trim();
     }
 }
