@@ -46,10 +46,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/rooms").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/bookings").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/bookings", "/api/bookings/page").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/bookings").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/api/bookings/my").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/my", "/api/bookings/my/page").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").authenticated()
 
                         .anyRequest().authenticated())

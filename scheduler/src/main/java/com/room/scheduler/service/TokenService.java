@@ -5,6 +5,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.room.scheduler.model.User;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +16,22 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class TokenService {
+
+    private static final Logger log = LoggerFactory.getLogger(TokenService.class);
+    private static final String DEFAULT_INSECURE_SECRET = "minha-chave-secreta-padrao-local";
+
     @Value("${api.security.token.secret}")
     private String secret;
+
+    @PostConstruct
+    public void validateSecret() {
+        if (secret == null || secret.trim().length() < 32) {
+            throw new IllegalStateException("JWT_SECRET inseguro ou ausente. A chave deve conter no mínimo 32 caracteres (256 bits).");
+        }
+        if (DEFAULT_INSECURE_SECRET.equals(secret.trim())) {
+            log.warn("ATENÇÃO: Utilizando segredo JWT padrão de desenvolvimento. Configure a variável de ambiente JWT_SECRET com um segredo forte em produção.");
+        }
+    }
 
     public String generateToken(User user) {
         try {
