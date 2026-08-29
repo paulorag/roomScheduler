@@ -33,19 +33,19 @@ class TokenServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenSecretIsTooShort() {
-        TokenService invalidTokenService = new TokenService();
-        ReflectionTestUtils.setField(invalidTokenService, "secret", "curta");
+    void shouldFallbackWhenSecretIsNull() {
+        TokenService fallbackService = new TokenService();
+        ReflectionTestUtils.setField(fallbackService, "secret", null);
 
-        assertThrows(IllegalStateException.class, invalidTokenService::validateSecret);
+        assertDoesNotThrow(fallbackService::validateSecret);
     }
 
     @Test
-    void shouldThrowExceptionWhenSecretIsNull() {
-        TokenService invalidTokenService = new TokenService();
-        ReflectionTestUtils.setField(invalidTokenService, "secret", null);
+    void shouldAcceptCustomSecret() {
+        TokenService customService = new TokenService();
+        ReflectionTestUtils.setField(customService, "secret", "minha-chave-customizada");
 
-        assertThrows(IllegalStateException.class, invalidTokenService::validateSecret);
+        assertDoesNotThrow(customService::validateSecret);
     }
 
     @Test

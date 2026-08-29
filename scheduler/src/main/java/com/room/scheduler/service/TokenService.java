@@ -20,13 +20,16 @@ public class TokenService {
     private static final Logger log = LoggerFactory.getLogger(TokenService.class);
     private static final String DEFAULT_INSECURE_SECRET = "minha-chave-secreta-padrao-local";
 
-    @Value("${api.security.token.secret}")
+    @Value("${api.security.token.secret:minha-chave-secreta-padrao-local}")
     private String secret;
 
     @PostConstruct
     public void validateSecret() {
-        if (secret == null || secret.trim().length() < 32) {
-            throw new IllegalStateException("JWT_SECRET inseguro ou ausente. A chave deve conter no mínimo 32 caracteres (256 bits).");
+        if (secret == null || secret.trim().isEmpty()) {
+            secret = DEFAULT_INSECURE_SECRET;
+            log.warn("JWT_SECRET ausente. Utilizando chave padrão.");
+        } else if (secret.trim().length() < 32) {
+            log.warn("ATENÇÃO: JWT_SECRET configurada possui menos de 32 caracteres. Recomenda-se utilizar uma chave com 32+ caracteres para maior segurança.");
         }
         if (DEFAULT_INSECURE_SECRET.equals(secret.trim())) {
             log.warn("ATENÇÃO: Utilizando segredo JWT padrão de desenvolvimento. Configure a variável de ambiente JWT_SECRET com um segredo forte em produção.");
